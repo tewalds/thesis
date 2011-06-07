@@ -1,0 +1,300 @@
+% This template was created May 4th, 2010 by Colin Ophus.  Since my thesis was accepted by the Library of Canada, I believe all of the formatting, page ordering, etc is correct.  To start, fill out all of the definitions below, ie every term after a \def. Then modify the existing chapters and create your own.
+
+% This is a thesis template designed to meet the University of Alberta electronic submission standards.
+% It comes with absolutely no guarantees that it will work at all.
+% That being said, it should work first try with no need to install additional packages or style files. I designed it with PDFLaTeX in mind, so you should use .png and if you must .jpg and .tiff image files. For the more advanced users, PDF files can be used for any figure or if you change to a DVI intermediary you can use .eps format.
+
+% Known bugs:
+% - Unfortunately you will get ~9 warnings for the intro pages.  This is a consequence of removing the numbering from those pages (as required by the U of A faculty of grad studies and research.  I do not know how to correct this.
+% - The preface page is double spaced in addition to the abstract page. This is not really a problem, but I would prefer to double space only the abstract.  I have not figured out a good way to do so though.
+
+\documentclass[12pt, letterpaper]{report}
+
+% Define global variables, like names and thesis title
+% If you thesis title is more than three lines, you will need to adjust the spacing on the title page.
+\def\name{Timo Ewalds}
+\def\thesistitle{Playing and Solving Havannah using Monte Carlo Tree Search and Proof Number Search}
+\def\supervisor{Jonathan Schaeffer, Ryan Hayward}
+\def\coma{Prof Name}
+\def\comb{Prof Name}
+\def\comc{Prof Name}
+\def\comd{Prof Name}
+\def\come{Prof Name - External}
+\def\superloc{Computing Science}
+\def\loca{Department}
+\def\locb{Department}
+\def\locc{Department}
+\def\locd{Department}
+\def\loce{Department, Institution}
+\def\program{Masters}  % Your degree
+\def\school{University of Alberta}
+\def\semester{Fall 2011}  % The convocation period when you submit your thesis:  Spring or Winter, then year
+\def\dept{Computing Science}  % Your department
+
+% Add command for degree symbol:   \degree
+\newcommand{\degree}{\ensuremath{^\circ}}
+
+% Various packages and appearance changes
+% Adjust if desired
+\usepackage{amsmath, amssymb, amsthm}
+\usepackage{graphicx,color}
+\usepackage[left=1.5in, right=1.5in, top=1.5in, bottom=1in, includefoot, headheight=.5in]{geometry}
+\parindent 0pt
+\parskip 10pt
+\renewcommand{\baselinestretch}{1.33}
+\numberwithin{equation}{section}
+\renewcommand{\bibname}{References}
+\renewcommand{\contentsname}{Contents}
+\pagenumbering{roman}
+
+\usepackage{havannah}
+\renewcommand\HDrawHex{\draw[fill=gray!35]}
+
+
+% Bibliography stuff
+\usepackage[square, comma, numbers, sort&compress]{natbib}
+\renewcommand{\bibsep}{10pt}
+\bibliographystyle{unsrtnat}
+
+% Customising headers 
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\rhead{}
+\lhead{\nouppercase{\textsc{\leftmark}}}
+\renewcommand{\headrulewidth}{0pt}
+\makeatletter
+\renewcommand{\chaptermark}[1]{\markboth{\textsc{\@chapapp}\ \thechapter:\ #1}{}}
+\makeatother%
+
+% New chapter headings
+\usepackage[grey,utopia]{quotchap}
+
+% PDF hyperlinks
+% This is where you change their colouring - feel free to go wild or conservative, it is your thesis after all
+\usepackage[colorlinks]{hyperref}
+\usepackage[figure,table]{hypcap}
+\hypersetup{
+	bookmarksnumbered,
+	pdfstartview={FitH},
+	citecolor={red},
+	linkcolor={red},
+	urlcolor={red},
+	pdfpagemode={UseOutlines}
+}
+\makeatletter
+\newcommand\org@hypertarget{}
+\let\org@hypertarget\hypertarget
+\renewcommand\hypertarget[2]{%
+  \Hy@raisedlink{\org@hypertarget{#1}{}}#2%
+} 
+\makeatother
+
+% Change bulleted lists - feel free to modify this
+\renewcommand{\labelitemi}{$\blacktriangleright$}
+
+
+
+
+
+% Actual text of the thesis starts here
+\begin{document}
+	\pagenumbering{roman}
+	\setcounter{page}{-99}  % So that page numbering won't interfere, -ve numbers don't show
+	\thispagestyle{empty}
+	
+
+	% Titlepage
+	\pdfbookmark[0]{Prefatory Pages}{prefatory}
+	\pdfbookmark[1]{Title}{title}
+%	\vspace{.25in}
+%	\title{
+	\begin{center}
+		\Large{\textbf{\school}}  \\ [.6in]
+		\Large{\textbf{\thesistitle}} \\ [.1in]
+		\normalsize{by} \\ [.1in]
+		\Large{\textbf{\name}}  \\ [.6in]
+		\normalsize{A thesis submitted to the Faculty of Graduate Studies and Research \\ 
+		in partial fulfillment of the requirements for the degree of} \\ [0.1in]
+		\Large{\textbf{\program}} \\ [.1in]
+		\normalsize{\dept} \\ [0.6in]	
+		\scriptsize{\copyright\:\name} \\
+		\scriptsize{\semester} \\
+		\scriptsize{Edmonton, Alberta} \\ [0.6in]	
+		% DO NOT modify this text, it is a requirement
+		\scriptsize{Permission is hereby granted to the University of Alberta Libraries to reproduce single copies of this thesis and to lend or sell such copies for private, scholarly or scientific research purposes only. Where the thesis is converted to, or otherwise made available in digital form, the University of Alberta will advise potential users of the thesis of these terms.
+		
+The author reserves all other publication and other rights in association with the copyright in the thesis and, except as herein before provided, neither the thesis nor any substantial portion thereof may be printed or otherwise reproduced in any material form whatsoever without the author's prior written permission.}
+	\end{center}
+
+	% Examining committee page
+	\newpage
+	% Begin numbering the pages with Roman numerals
+	\pdfbookmark[1]{Examining Committee}{examining}
+	\chapter*{Examining Committee}
+	\thispagestyle{empty}
+ 		\supervisor, \; \superloc \\ \\
+ 		\coma, \; \loca \\ \\
+ 		\comb, \; \locb \\ \\
+ 		\comc, \; \locc \\ \\
+ 		\comd, \; \locd \\ \\
+ 		\come, \; \loce
+	
+	
+	% Dedication
+ 	\newpage 
+	\pdfbookmark[1]{Dedication}{dedication}
+	\chapter*{}
+	\thispagestyle{empty}
+	This thesis is dedicated to\\
+	A person or persons or perhaps some abstract concept.
+
+	% Abstract
+	\newpage 
+	\pdfbookmark[1]{Abstract}{abstract}
+	\chapter*{Abstract}
+	\thispagestyle{empty}
+	\vspace*{-0.7in}
+	\renewcommand{\baselinestretch}{1.8}
+	\normalsize{
+	This is the abstract text. It MUST be double spaced. Don't forget that. Duis non sapien quis justo sagittis tempor id id odio. In varius porta sollicitudin. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse sodales sagittis ante, id ultrices ipsum sollicitudin quis. Ut fermentum ornare neque eu sollicitudin. Quisque neque massa, facilisis id congue ac, blandit vitae nulla. Donec vulputate scelerisque lorem quis tincidunt.
+	} \vspace*{-0.2in} \\
+	
+	% A second paragraph if you need it
+	\normalsize{
+	This is a second abstract paragraph. if you need it. Nullam rutrum elit in magna porta vehicula id non elit. Nam varius ultricies lectus ac consequat. Duis tellus ligula, convallis ac pretium et, dignissim at enim. Cras turpis lorem, eleifend at imperdiet et, sollicitudin id ante. Nam blandit volutpat nisl, nec congue mi feugiat sed. Nunc accumsan, urna a elementum viverra, elit purus iaculis urna, vel vehicula est risus quis turpis. Ut laoreet scelerisque elit, a rhoncus nibh placerat in. Nulla feugiat ullamcorper justo quis adipiscing. Etiam dolor arcu, porta et dictum vitae, dictum eget dui.
+	}
+	\renewcommand{\baselinestretch}{1.33}
+	
+	% Preface
+	\newpage 
+	\pdfbookmark[1]{Preface}{preface}
+	\chapter*{Preface}
+	\thispagestyle{empty}
+	\vspace*{-0.7in}
+	Here we describe the layout of the thesis.  You should also include a one or two sentence description of each chapter, as such: Chapter \ref{intro} introduces the concepts used in this thesis. Chapter \ref{achapterlabel} describes a topic. Chapter \ref{bchapterlabel} talks about another one. Finally, chapter \ref{conc} wraps it all up. Note the hyperlinked references!
+	
+	% Also you can define a label anywhere using \label{blah}.  Then you can make links to it with \ref{blah}.  Very handy.
+
+	% Acknowledgements
+	\newpage 
+	\pdfbookmark[1]{Acknowledgements}{acknowledgements}
+ 	\chapter*{Acknowledgements}
+ 	\thispagestyle{empty}
+ 	\vspace*{-0.7in}
+ 	\small{
+	I thank so-and-so, as well as whatshisname. They were awesome.
+	}
+	
+	% Table of contents
+	\newpage
+	\pdfbookmark[0]{Contents}{contents}
+	\pdfbookmark[1]{Table of Contents}{toc}
+	\normalsize
+	\tableofcontents 
+	
+	% List of figures
+	\newpage
+	\pdfbookmark[1]{List of Figures}{listfigs}
+	\listoffigures
+
+	% List of tables
+	\newpage	
+	\pdfbookmark[1]{List of Tables}{listtables}
+	\listoftables
+	
+	% List of symbols
+	% I have included my own symbols as an example. Modify as you see fit.
+	\newpage
+	\thispagestyle{empty}
+	\pdfbookmark[1]{List of Symbols}{listsymbols}
+	\section*{}
+	\begin{flushright}
+		\huge{List of Symbols}
+	\end{flushright}
+	\vspace{0.4in}
+	\begin{center}
+		\begin{tabular}{rl}
+			Symbol & Meaning\\
+			\hline
+%			$\alpha$			& Upper Bound \\
+%			$\beta$				& Lower Bound \\
+			$\delta$ 			& Proof number at OR node, disproof number at AND node \\
+			$\phi$ 				& Disproof number at OR node, proof number at AND node \\
+		\end{tabular}
+	\end{center}
+	
+	% List of abbreviations
+	% Again here are some examples
+	\newpage
+	\thispagestyle{empty}
+	\pdfbookmark[1]{List of Abbreviations}{listabbrev}
+	\section*{}
+	\begin{flushright}
+		\huge{List of Abbreviations}
+	\end{flushright}
+	\vspace{0.4in}
+	\begin{center}
+		\begin{tabular}{rl}
+			Abbreviation & Meaning \\
+			\hline
+			$\alpha\beta$ & Alpha-Beta algorithm \\
+			DFPN		& Depth First Proof Number search \\
+			MCTS		& Monte Carlo Tree Search \\
+			PNS			& Proof Number Search \\
+			RAVE		& Rapid Action Value ... \\
+			UCB			& Upper Confidence Bounds \\
+			UCT			& Upper Confidence bounds as applied to Trees \\
+
+		\end{tabular}
+	\end{center}	
+	
+	
+	
+
+% ********************************************************************************
+	% Main thesis chapters
+	% Comment out whatever you are not working on if you want the thesis to buld faster
+	\newpage
+	% Begin numbering the pages with arabic numerals (main thesis body)
+	\setcounter{page}{1}
+	\pagenumbering{arabic}
+	
+	% Intro chapter, first numbered chapter
+	\chapter[Introduction]{\label{intro} \LARGE Introduction to Havannah and \\ General Game Playing Techniques}
+	\input{./intro/intro}
+	
+	% The first real chapter
+	% This one has some footnotes
+	% You MUST reference any publications that contain work you performed in this manner
+	% Additionally it is nice to acknowledge if some result you are presenting was obtained by someone else
+	% Feel free to change the directory naming schema - I used representitive topic names for both the folder and the chapter .tex
+	% The paper reference includes a hyperlink (\href) to the paper, but it is not necessary.
+	\chapter[Playing Havannah]{\label{playing} \LARGE Playing Havannah }
+	\input{./playing/playing}
+	
+	% A second real chapter, this time without footnotes
+	\chapter[Solving Size 4 Havannah!]{\label{bchapterlabel} \LARGE Solving Size 4 Havannah with MCTS}
+	\input{./solving/solving}
+
+	% Final chapter, conclusions
+	\chapter[Conclusions]{\label{conc} \LARGE Conclusions}
+	\input{./conclusion/conclusion}
+	
+	% Appendices
+	% Comment out if you don't plan on having any appendices
+%	\appendix
+%	\chapter[Statistical Derivations]
+%	{\label{appendstats} \LARGE Appendix: Statistical Derivations}
+%	\input{./appendices/appendices}	
+	
+	% Ta-da!  A thesis
+	% ********************************************************************************
+	
+	% References - with commands to modify size and spacing
+	\phantomsection
+	\addcontentsline{toc}{chapter}{References}
+	\small
+	\renewcommand{\baselinestretch}{0.25}
+	\bibliography{thesis}
+
+\end{document}
