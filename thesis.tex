@@ -171,9 +171,9 @@ The author reserves all other publication and other rights in association with t
   \chapter*{Preface}
   \thispagestyle{empty}
   \vspace*{-0.7in}
-  Here we describe the layout of the thesis.  You should also include a one or two sentence description of each chapter, as such: Chapter \ref{intro} introduces the concepts used in this thesis. Chapter \ref{achapterlabel} describes a topic. Chapter \ref{bchapterlabel} talks about another one. Finally, chapter \ref{conc} wraps it all up. Note the hyperlinked references!
-  
-  % Also you can define a label anywhere using \label{blah}.  Then you can make links to it with \ref{blah}.  Very handy.
+
+Chapter \ref{intro} introduces some of the concepts and motivates this thesis. Chapter \ref{background} provides definitions and background on the algorithms used in the rest of the thesis. Chapter \ref{havannah} describes the rules of Havannah and many of its properties. Chapter \ref{playing} describes the specific techniques used to write a strong Havannah player. Chapter \ref{solving} shows the techniques and solution to size 4 Havannah. Chapter \ref{conclusion} concludes.
+
 
   % Acknowledgements
   \newpage 
@@ -238,12 +238,12 @@ The author reserves all other publication and other rights in association with t
       Abbreviation & Meaning \\
       \hline
       $\alpha\beta$ & Alpha-Beta algorithm \\
-      DFPN    & Depth First Proof Number search \\
-      MCTS    & Monte Carlo Tree Search \\
-      PNS      & Proof Number Search \\
-      RAVE    & Rapid Action Value ... \\
-      UCB      & Upper Confidence Bounds \\
-      UCT      & Upper Confidence bounds as applied to Trees \\
+      DFPN          & Depth First Proof Number search \\
+      MCTS          & Monte Carlo Tree Search \\
+      PNS           & Proof Number Search \\
+      RAVE          & Rapid Action Value Estimate \\
+      UCB           & Upper Confidence Bounds \\
+      UCT           & Upper Confidence bounds as applied to Trees \\
 
     \end{tabular}
   \end{center}  
@@ -253,40 +253,29 @@ The author reserves all other publication and other rights in association with t
 
 % ********************************************************************************
   % Main thesis chapters
-  % Comment out whatever you are not working on if you want the thesis to buld faster
+  % Comment out whatever you are not working on if you want the thesis to build faster
   \newpage
   % Begin numbering the pages with arabic numerals (main thesis body)
   \setcounter{page}{1}
   \pagenumbering{arabic}
 
-  % Intro chapter, first numbered chapter
   \chapter[Introduction]{\label{intro} \LARGE Introduction, Motivation and Contributions}
-  \input{./intro/intro}
+  \input{intro/intro}
 
-  % Intro chapter, first numbered chapter
-  \chapter[Background]{\label{intro} \LARGE General Game Playing Techniques}
-  \input{./background/background}
+  \chapter[Background]{\label{background} \LARGE General Game Playing Techniques}
+  \input{background/background}
 
-  % Rules and properties of Havannah
   \chapter[Havannah]{\label{havannah} \LARGE Rules and Properties of Havannah}
-  \input{./havannah/havannah}
-  
-  % The first real chapter
-  % This one has some footnotes
-  % You MUST reference any publications that contain work you performed in this manner
-  % Additionally it is nice to acknowledge if some result you are presenting was obtained by someone else
-  % Feel free to change the directory naming schema - I used representitive topic names for both the folder and the chapter .tex
-  % The paper reference includes a hyperlink (\href) to the paper, but it is not necessary.
-  \chapter[Playing Havannah]{\label{playing} \LARGE Playing Havannah }
-  \input{./playing/playing}
-  
-  % A second real chapter, this time without footnotes
-  \chapter[Solving Size 4 Havannah!]{\label{bchapterlabel} \LARGE Solving Size 4 Havannah with MCTS}
-  \input{./solving/solving}
+  \input{havannah/havannah}
 
-  % Final chapter, conclusions
-  \chapter[Conclusions]{\label{conc} \LARGE Conclusions}
-  \input{./conclusion/conclusion}
+  \chapter[Playing Havannah]{\label{playing} \LARGE Playing Havannah }
+  \input{playing/playing}
+
+  \chapter[Solving Size 4 Havannah!]{\label{solving} \LARGE Solving Size 4 Havannah with MCTS}
+  \input{solving/solving}
+
+  \chapter[Conclusions]{\label{conclusion} \LARGE Conclusions}
+  \input{conclusion/conclusion}
   
   % Appendices
   % Comment out if you don't plan on having any appendices
