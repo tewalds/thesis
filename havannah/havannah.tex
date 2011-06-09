@@ -1,0 +1,79 @@
+
+
+
+\section{Rules of Havannah}
+
+
+\begin{figure}[tb]
+\centering
+\begin{HavannahBoard}[board size=6,coordinate style=classical]
+\HStoneGroup[color=black,label=$\mathcal F$]{e10,f10,g10,g9,h9,h8,i8,j8,h7,h6,h5,i5,i4,k8}
+\HStoneGroup[color=white,label=$\mathcal B$]{a1,a2,b3,c3,d4,e4,e3,e2,f2,f1}
+\HStoneGroup[color=transparent,label=$\mathcal R$]{e7,e8,d8,c8,b7,b6,b5,c5,d6}
+\end{HavannahBoard}
+\caption{The three winning conditions as shown on a size 6 Havannah board}
+\label{fig:rules}
+\end{figure}
+
+Havannah is a connection game invented in 1979 by Christian Freeling. It is a two player, zero-sum, perfect information game played on a hexagonal board. Each turn a player places a piece on the board in alternating play. Pieces are never removed from the board. The three winning conditions are shown in Figure \ref{fig:rules}:
+\begin{itemize}
+	\setlength{\itemsep}{0pt}
+	\setlength{\parskip}{0pt}
+	\setlength{\parsep}{0pt}
+	\item A \textbf{Fork} is a group of stones that links 3 edges (corners are not part of either edge)
+	\item A \textbf{Bridge} is a group of stones that links 2 corners
+	\item A \textbf{Ring} is a group of stones that surround at least one cell (which can be empty or filled by either player)
+\end{itemize}
+
+Havannah is played on board sizes ranging from 4 to 10 cells per side. Better players prefer bigger boards due to the larger component of strategy compared to the small boards where tactics dominate. In 2002, Christian Freeling offered 1000 Euro for any program that beats him in just one in ten games on size 10 by 2012.
+
+\section{Properties of Havannah}
+
+Havannah is considered hard to play for computers for several reasons including the lack of a heuristic evaluation function, few expert games, and a large state space complexity. It is often compared to Hex, which is also a connection game, but very few of the mathematical properties of  Hex apply in Havannah. In this section I explain some of the properties of Havannah, especially in contrast to the better known properties of Hex.
+
+\subsection{Dead Cells}
+
+Strong hex programs reduce the moves under consideration by avoiding playing in dead cells. Dead cells which are cells that provably cannot affect the outcome of the game. Figure \ref{fig:hexdeadcells} shows the Hex dead cells. Unfortunately due to rings, these cells can have an effect on the outcome, so larger patterns are needed.
+
+\begin{figure}[tb]
+  \centering
+\begin{tabular}{ccccc}
+\begin{HavannahBoard}[board size=2,coordinate style=classical,show coordinates=false,hex height=12pt]
+\HStoneGroup[color=white]{a1,b1,c2,c3}
+\end{HavannahBoard}
+&
+\begin{HavannahBoard}[board size=2,coordinate style=classical,show coordinates=false,hex height=12pt]
+\HStoneGroup[color=black]{b3}
+\HStoneGroup[color=white]{a1,b1,c2}
+\end{HavannahBoard}
+&
+\begin{HavannahBoard}[board size=2,coordinate style=classical,show coordinates=false,hex height=12pt]
+\HStoneGroup[color=black]{a2,b3}
+\HStoneGroup[color=white]{b1,c2}
+\end{HavannahBoard}
+&
+\begin{HavannahBoard}[board size=2,coordinate style=classical,show coordinates=false,hex height=12pt]
+\HStoneGroup[color=black]{a1,a2,b3}
+\HStoneGroup[color=white]{c2}
+\end{HavannahBoard}
+&
+\begin{HavannahBoard}[board size=2,coordinate style=classical,show coordinates=false,hex height=12pt]
+\HStoneGroup[color=black]{a1,a2,b3,c3}
+\end{HavannahBoard}
+
+\end{tabular}
+	\caption{Hex dead cell patterns: The center of each pattern cannot help either player form a winning connection.}
+	\label{fig:hexdeadcells}
+\end{figure}
+
+
+\begin{itemize}
+\item dead cells are complicated and uncommon
+\item both players can have forced wins, race to completion
+\item virtual connections can be broken
+\item multiple win conditions
+\item fork isn't a simple connection
+\item multiple ways for each win condition to occur (ie any 2 corners or 3 edges)
+\item rings can't be found as easily
+\item ties are possible
+\end{itemize}

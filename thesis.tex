@@ -258,10 +258,18 @@ The author reserves all other publication and other rights in association with t
 	% Begin numbering the pages with arabic numerals (main thesis body)
 	\setcounter{page}{1}
 	\pagenumbering{arabic}
-	
+
 	% Intro chapter, first numbered chapter
-	\chapter[Introduction]{\label{intro} \LARGE Introduction to Havannah and \\ General Game Playing Techniques}
+	\chapter[Introduction]{\label{intro} \LARGE Introduction, Motivation and Contributions}
 	\input{./intro/intro}
+
+	% Intro chapter, first numbered chapter
+	\chapter[Background]{\label{intro} \LARGE General Game Playing Techniques}
+	\input{./background/background}
+
+	% Rules and properties of Havannah
+	\chapter[Havannah]{\label{havannah} \LARGE Rules and Properties of Havannah}
+	\input{./havannah/havannah}
 	
 	% The first real chapter
 	% This one has some footnotes
