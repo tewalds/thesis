@@ -50,6 +50,8 @@
 \usepackage{havannah}
 \renewcommand\HDrawHex{\draw[fill=gray!35]}
 
+\usepackage{fancybox}
+\usepackage{tikz}
 
 \usepackage{listings}
 
@@ -241,8 +243,10 @@ Chapter \ref{intro} introduces some of the concepts and motivates this thesis. C
       \hline
 %      $\alpha$      & Upper Bound \\
 %      $\beta$        & Lower Bound \\
-      $\delta$       & Proof number at OR node, disproof number at AND node \\
-      $\phi$         & Disproof number at OR node, proof number at AND node \\
+      $pn$           & Proof number \\
+      $dn$           & Disproof number \\
+      $\phi$         & Proof number at an OR node, disproof number at an AND node \\
+      $\delta$       & Disproof number at an OR node, proof number at an AND node \\
     \end{tabular}
   \end{center}
   
@@ -263,8 +267,10 @@ Chapter \ref{intro} introduces some of the concepts and motivates this thesis. C
       $\alpha\beta$ & Alpha-Beta algorithm \\
       DFPN          & Depth First Proof Number search \\
       MCTS          & Monte Carlo Tree Search \\
+      MPN           & Most Proving Node \\
       PNS           & Proof Number Search \\
       RAVE          & Rapid Action Value Estimate \\
+      TT            & Transposition Table \\
       UCB           & Upper Confidence Bounds \\
       UCT           & Upper Confidence bounds as applied to Trees \\
 
