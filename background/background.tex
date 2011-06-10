@@ -3,37 +3,134 @@
 Here are general game playing concepts and definitions:
 
 \begin{description}
-\item[Perfect Information] A game has the property of perfect information when both players know the full state of the game. There is no hidden information, such as cards in a hand, nor elements of randomness such as a dice.
+\item[Perfect Information] A game has the property of perfect information when both players know the full state of the game.
+\item[Stochastic] A game is stochastic if it has elements of randomness, such as dice rolls. Backgammon is stochastic while Chess, Hex and Havannah are not.
 \item[Zero Sum Games] A zero sum game has the property that one players gain is the other players loss. A draw is still possible, but no move can help both players, so there is no incentive to cooperate.
-\item[State] A state is a full description of a board position. It includes the locations of all the pieces, and any other relevant information. In chess, the state would include whether each king can castle, and whether a pawn can capture en passant. In games where repeated moves are not allowed, the full game history may be included in the state. Occasionally a simplified version of the state is used when speed is more important than accuracy.
-\item[Move] A move is a distinct action by one of the players. In games with multi-part moves, such as Amazons where each move consists of a movement plus shooting an arrow, the pair of actions would be considered a single move. There are usually multiple moves available from each state, but only one can be chosen per turn.
+\item[State] A state is a full description of a board position. It includes the locations of all the pieces, and any other relevant information. In chess, the state would include whether each king can castle, and whether a pawn can capture \textit{en passant}. In games where repeated moves are not allowed, the full game history may be included in the state. Occasionally a simplified version of the state is used when speed is more important than accuracy.
+\item[Move] A move is a distinct action by one of the players leading from one state to another state. In games with multi-part moves, such as Amazons where each move consists of a movement plus shooting an arrow, the pair of actions would be considered a single move. There are usually multiple moves available from each state, but usually only one can be chosen per turn.
+\item[History] All moves leading from some starting position, usually the beginning of the game, to the current state.
 \item[Branching Factor] is the number of moves available to each player on average. This depends on the rules of the game, board size, pieces in play and the stage of the game. This can be as low as 1 for forced moves, or very high, such as in the hundreds or thousands for Amazons or Arimaa.
 \item[Game Tree] Games can be represented as a game tree. Each position in the game is a node, and each move is an edge in the graph connecting the position before the move to the position after the move. When there are multiple paths to a position, it can be represented as separate nodes, leading to a tree, or combined as a single node, leading to a directed acyclic graph (DAG). Some games have loops, where a position can be reached multiple times in a single game, leading to a directed graph.
+\item[Root Node] The root node is the highest node in the tree. It has no parents, and there is exactly one of them in any tree.
+\item[Leaf Node] A leaf node is any node that has no children.
 \item[Node Value] Each node has an associated outcome or expected outcome associated with it. Terminal positions are positions where one of the players has won or it is a draw, have an exact value such as win, loss or draw, or a score to show how much a player won by.
-\item[Heuristic] A heuristic function takes a position and returns a heuristic value associated with the position. This value often representing a likelihood of winning from that position, but can also be just an abstract number that can be compared against other heuristic values to order nodes or moves.
-\item[State Complexity] is the number of unique reachable states in the game.
-\item[Minimax] In 2-player games, each player attempts to win at the expense of the other player. To do so, each player attempts to minimize the opponents gain while maximizing his own gain.
+\item[Heuristic] A heuristic function takes a position and returns a value associated with the position. This value often represents the likelihood of winning from that position, but can also be just an abstract number that can be compared against other values to order nodes or moves.
+\item[State Space] is the number of unique reachable states in the game.
+\item[Game Complexity] is the size of the state space, sometimes taking transpositions into account. This can either be the number of unique positions or the number of possible games.
+\item[Minimax] In 2-player games, each player attempts to win at the expense of the other player. To do so, each player attempts to minimize the opponent's gain while maximizing their own gain. To win, a player must at at least one winning move, but to lose all moves must be losing moves.
 \item[Minimax Backup] Given a node N who's children all have known values, N's value is equal to the value of the most favourable child for the current player.
-\item[Minimax Value] The value of a node given both players play perfectly according to Minimax.
+\item[Minimax Value] The value of a node given that both players play perfectly according to Minimax.
+\item[Transposition] One state with multiple histories. If moves A-X-B leads to the same position and state as B-X-A, they are transpositions. They are the same state, so they will have the same minimax value, and should not be searched twice.
+\item[Hash Value] A hash value is a representative number of a state used to detect transpositions. Transpositions all have the same hash value, but different states have different hash values. Often collisions are possible so two states that aren't a transposition have the same hash value, but this is very rare as large hash values (usually 64 bit unsigned integers) are used.
+\item[Zobrist Hash] In some search spaces a hash value can be built up incrementally by XORing a random string associated with each move against a previous hash value.
+\item[Depth First Search] In a depth first search (DFS), nodes are considered in a depth-first way. The full subtree of a node will be explored before any of its siblings will be explored. This is very memory efficient since it only needs to store the nodes along the path from the root to the current node, but leaves many nodes near the root unexplored for long periods of time.
+\item[Breadth First Search] In a breadth first search, all nodes at a specific depth will be considered before any nodes at a deeper depth, in increasing depth. This is very memory intensive as all nodes up to the specified depth must be kept in memory.
+\item[Best First Search] In a best first search nodes are explored in order of their heuristic value. Promising nodes are explored before less promising nodes. This is very memory intensive as all nodes explored to date must be kept in memory.
+\item[Anytime algorithm] An anytime algorithm can return an answer at any point of execution, but continues to run to provide a more accurate and potentially better answer.
 \end{description}
 
-Game playing programs all build a game tree, and then chose the most promising move. 
+Game playing programs all build a game tree, and then chose the most promising move at the root of the tree.
 
+\section{Minimax}
 
+The minimax algorithm is the foundation of all game playing algorithms and was invented before computers. The goal is the find the minimax value of a state or set of states, or equivalently for a set of moves. All values are from the perspective of the root player. The value of a node for the root player is the maximum of its children nodes, and the minimum for the opponents children. The pseudocode for a simple depth first search version is shown in Figure \ref{fig:minimaxcode}.
 
-\section{Alpha-Beta}
+\begin{figure}
 
-Alpha-beta ($\alpha\beta$) is a refinement of minimax, ignoring or pruning parts of the game tree that are provably unreachable if both players play perfectly. It maintains two bounds to store the minimum value each player is guaranteed given the tree searched so far. When these bounds cross, the remaining moves don't need to be considered. Alpha-beta is a depth first algorithm, but has many variants that improve move ordering or make it act more like a best-first algorithm.
+\begin{lstlisting}
+int minimax(State state){
+	if(state.terminal())
+		return state.value();
+	int value;
+	if(state.player() == 1){
+		value = -INF;
+		foreach(state.successors as succ)
+			value = max(value, minimax(succ));
+	}else{
+		value = INF;
+		foreach(state.successors as succ)
+			value = min(value, minimax(succ));
+	}
+	return value;
+}
+\end{lstlisting}
 
-Requires a heuristic, depends on the speed and strength of the heuristic.
+\caption{Minimax Pseudocode}
+\label{fig:minimaxcode}
 
-\subsection{Transposition Table}
+\end{figure}
+
 
 \subsection{Negamax}
 
+Minimax uses values as taken from a fixed perspective of the root player. This complicates the code with having to minimize for one player and maximize for the other. Noting that $max(a,b) = −min(−a,-b)$, the duplication can be removed by negating the value each time we switch perspective. In this setup all values returned from an evaluation function must be from the perspective of the player who is making the move. The pseudocode for this transformation is shown in Figure \ref{fig:negamaxcode}.
+
+\begin{figure}
+
+\begin{lstlisting}
+int negamax(State state){
+	if(state.terminal())
+		return state.value();
+	int value = -INF;
+	foreach(state.successors as succ)
+		value = max(value, -negamax(succ));
+	return value;
+}
+\end{lstlisting}
+
+\caption{Negamax Pseudocode}
+\label{fig:negamaxcode}
+\end{figure}
+
+Several algorithms shown later reference the negamax formulation, and mean that the perspective shifts after every move. All future pseudocode will be shown using the negamax formulation.
+
+
+\section{Alpha-Beta}\label{sec:alphabeta}
+
+Alpha-beta ($\alpha\beta$) is a refinement of minimax, ignoring or pruning parts of the game tree that are provably unreachable if both players play perfectly. It maintains two bounds to store the minimum value each player is guaranteed given the tree searched so far. When these bounds meet or cross, this is called a cut-off, and the remaining moves don't need to be considered. 
+
+The pseudocode for alpha-beta, written in the negamax formulation is shown in Figure \ref{fig:abcode}. It is a depth first implementation that returns after a maximum depth is reached. If a terminal node is found, the true value is returned, otherwise a heuristic value is returned.
+
+\begin{figure}
+
+\begin{lstlisting}
+int alphabeta(State state, int depth, int alpha, int beta){
+	if(state.terminal() || depth == 0)
+		return state.value();
+	foreach(state.successors as succ){
+		alpha = max(alpha, -alphabeta(succ, depth-1, -beta, -alpha));
+		if(alpha >= beta)
+			break;
+	}
+	return alpha;
+}
+\end{lstlisting}
+
+\caption{Alpha-beta Pseudocode, shown in the negamax formulation}
+\label{fig:abcode}
+\end{figure}
+
+The runtime of alpha-beta is highly dependent on the branching factor $b$, search depth $d$, and the number of cut-offs. Minimax has a runtime of $b^d$, as does alpha-beta if it has no cut-offs. Given perfect move ordering, only the first move for the root player will need to be considered, leading to a runtime of $b^{d/2}$, or an exponential speedup. In general, we don't have perfect move ordering, so the runtime will be between these two extremes.
+
+\subsection{Transposition Table}
+
+Transpositions can lead to an exponential blowup in the search space. To minimize the number of transpositions reevaluated, all strong alpha-beta based programs use a transposition table. Transpositions are found by comparing hash values and indexing into a large table. Sometimes a hash table is used, but usually the number of nodes searched is too big to store in memory, so a simple replacement policy is used. The simplest is to use the hash value as an index into a large array of values, replacing the previous node that indexed to the same location.
+
+In many games this leads to a large speedup as the number of nodes searched is decreased dramatically.
+
+
+\subsection{Iterative Deepening}
+
+The runtime of alpha-beta is exponential in the search depth, and the strength of a player is dependent on a large search depth. If the algorithm is stopped early, the best move may not have been explored at all though, so a smaller search that finishes is likely better than a deep search that doesn't. Thus we start with a shallow search, and run a deeper search if we have time. This is not a big waste of work since the majority of the runtime is spent at the deepest level anyway. Iterative deepening allows alpha-beta to act as a breadth-first search with the memory overhead of a depth-first search.
+
+Iterative deepening, when combined with a transposition table, also gives better move ordering. A nodes value from the previous iteration is going to be a more accurate estimate of the value of a node than a heuristic estimate without a search. As we saw in section \ref{sec:alphabeta}, better move ordering can lead to an exponential speedup, easily offsetting the overhead from searching the shallow depths multiple times.
+
 \subsection{Other extensions}
 
-Negascout, history heuristic, killer move, quiescence search, etc
+Negascout, history heuristic, killer move, quiescence search, etc. Are these worth including at all?
+
+
+
 
 
 
@@ -44,17 +141,21 @@ Negascout, history heuristic, killer move, quiescence search, etc
 
 \section{Monte Carlo Tree Search}
 
-Monte Carlo Tree Search is an algorithm for building and exploring a game tree. It consists of four phases:
+Based on statistics, doesn't need a heuristic evaluation function.
+
+Monte Carlo Tree Search is an algorithm for building and exploring a game tree. It consists of four phases which together are called a simulation. Each simulation adds some experience to the tree, updating the expected chance of winning for the nodes it traverses. These winning rates are stored as the number of wins and the number of simulations through a node. The four phases are:
 \begin{description}
-\item[Descent] This phase descends the game tree from the root to a leaf node in the game tree. At each node one of the available moves is selected according to some criteria based on previous performance or heuristic knowledge. When the Upper Confidence Bounds (UCB) formula is used, this is called Upper Confidence Bounds applied to Trees (UCT), but other formulas have been developed and are commonly used. RAVE is a modification of this formula.
-\item[Expansion] If the leaf node has has experience from a previous simulation, its children are expanded, increasing the size of the tree.
-\item[Rollout] A random game is played from the leaf node through the newly expanded children, to the end of the game. Heuristics can be used to make the moves less random and more representative of a real game. The strength of the overall algorithm is highly dependent on the average outcome of the random games being representative of the strength of the position.
+\item[Descent] This phase descends the game tree from the root to a leaf node N in the game tree. At each node one of the available moves is selected according to some criteria based on the current winning rate and possibly heuristic knowledge. When the Upper Confidence Bounds (UCB) formula is used, this is called Upper Confidence Bounds applied to Trees (UCT), but other formulas such as RAVE have been developed and are commonly used.
+\item[Expansion] If the node N has experience from a previous simulation, its children are expanded, increasing the size of the tree.
+\item[Rollout] A random game is played from N through the newly expanded children, to the end of the game. Heuristics can be used to make the moves less random and more representative of a real game. The strength of the overall algorithm is highly dependent on the average outcome of the random games being representative of the strength of the position.
 \item[Back-propagation] The outcome of the random game in the rollout is back propagated to the moves chosen in the tree. The winning rate of the moves made by the player that won the rollout is increased while winning rate of the moves by the player that lost the rollout is decreased.
 \end{description}
 
-These four steps are repeated continually until a stopping condition such as running out of time or memory. At this point a move is chosen by some criteria. The three most common criteria are: most experience, most wins and highest lower confidence bound.
+These four steps are repeated continually until a stopping condition is reached, such as running out of time or memory. At this point a move is chosen by some criteria. The three most common criteria are: most simulations, most wins, and highest lower confidence bound on winning rate.
 
-Many extensions have been developed to increase the playing strength of MCTS
+Many extensions have been developed to increase the playing strength of MCTS. Some of these are explained below.
+
+\subsection{Rapid Action Value Estimation (RAVE)}
 
 \begin{itemize}
 \item RAVE
