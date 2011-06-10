@@ -15,21 +15,27 @@
 \label{fig:rules}
 \end{figure}
 
-Havannah is a connection game invented in 1979 by Christian Freeling. It is a two player, zero-sum, perfect information game played on a hexagonal board. Each turn a player places a piece on the board in alternating play. Pieces are never removed from the board. The three winning conditions are shown in Figure \ref{fig:rules}:
+Havannah is a connection game invented in 1979 by Christian Freeling. It is a two player, zero-sum, perfect information game played on a hexagonal board. Each turn a player places a piece on the board in alternating play. Pieces are never removed from the board nor moved after their initial placement. The three winning conditions are shown in Figure \ref{fig:rules}:
 \begin{itemize}
 	\setlength{\itemsep}{0pt}
 	\setlength{\parskip}{0pt}
 	\setlength{\parsep}{0pt}
-	\item A \textbf{Fork} is a group of stones that links 3 edges (corners are not part of either edge)
-	\item A \textbf{Bridge} is a group of stones that links 2 corners
-	\item A \textbf{Ring} is a group of stones that surround at least one cell (which can be empty or filled by either player)
+	\item A \textbf{Fork} is a group of stones that links 3 edges (corners are not part of either edge), for example the stones labelled $\mathcal F$ in Figure \ref{fig:rules}
+	\item A \textbf{Bridge} is a group of stones that links 2 corners, for example the stones labelled $\mathcal B$ in Figure \ref{fig:rules}
+	\item A \textbf{Ring} is a group of stones that surround at least one cell (which can be empty or filled by either player), for example the stones labelled $\mathcal R$ in Figure \ref{fig:rules}
 \end{itemize}
 
 Havannah is played on board sizes ranging from 4 to 10 cells per side. Better players prefer bigger boards due to the larger component of strategy compared to the small boards where tactics dominate. In 2002, Christian Freeling offered 1000 Euro for any program that beats him in just one in ten games on size 10 by 2012.
 
+Havannah is played by a few thousand players around the world, primarily on Little Golem\footnote{http://littlegolem.net} and similar sites. It is also played by computer programs at the International Computer Games Association games tournaments yearly.
+
+
+Coordinate system...
+
+
 \section{Properties of Havannah}
 
-Havannah is considered hard to play for computers for several reasons including the lack of a heuristic evaluation function, few expert games, and a large state space complexity. It is often compared to Hex, which is also a connection game, but very few of the mathematical properties of  Hex apply in Havannah. In this section I explain some of the properties of Havannah, especially in contrast to the better known properties of Hex.
+Havannah is considered hard to play for computers for several reasons including the lack of a good heuristic evaluation function, few expert games, and a large state space complexity. It is often compared to Hex, which is also a connection game, but very few of the mathematical properties of  Hex apply in Havannah. In this section I explain some of the properties of Havannah, especially in contrast to the better known properties of Hex.
 
 \subsection{Dead Cells}
 
@@ -71,7 +77,7 @@ Strong hex programs reduce the moves under consideration by avoiding playing in 
 \item dead cells are complicated and uncommon
 \item both players can have forced wins, race to completion
 \item virtual connections can be broken
-\item multiple win conditions
+\item multiple win conditions that interact in complex ways
 \item fork isn't a simple connection
 \item multiple ways for each win condition to occur (ie any 2 corners or 3 edges)
 \item rings can't be found as easily
