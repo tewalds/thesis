@@ -132,11 +132,11 @@ Negascout, history heuristic, killer move, quiescence search, etc. Are these wor
 
 \section{Proof Number Search} \label{sec:PNS}
 
+pseudocode?
+
 Proof Number Search (PNS) is a best-first search used to answer binary questions such as the outcome of a 2-player game starting from a given state. Being a binary outcome with the minimax property, it is well represented as an AND/OR tree when all values are from the perspective of the root player. Each node in the tree can have one of three values: Proven/Win, Disproven/Loss, or Unknown. All nodes store 2 numbers that show how close it is to be proven or disproven. The proof number (pn) is the minimum number of leaf nodes in the subtree that must be proven for the node to be proven. The disproof number (dn) is the minimum number of leaf nodes in the subtree that must be disproven for the node to be disproven. Some leaf nodes, if solved, will change the proof number of the root. Other leaf nodes, if solved, will change the disproof number of the root. Others, if solved, won't affect the proof or disproof numbers of the root. The Most Proving Nodes (MPN) are the intersection of the set that affect the proof number and the set that affect the disproof number at the root. Solving a Most Proving Node will definitely affect either the proof or disproof number of the root. Every tree is guaranteed to have at least one most proving node. Proof Number search grows its tree by continually expanding a most proving node. Proof Number search can be split into 3 phases: descent, expansion, and update.
 
 The most proving node is found during the descent phase. It can be found by selecting the child with the minimum proof number when at an OR node and by selecting the child with the minimum disproof number when at an AND node, applying this iteratively until a leaf node is reached. This leaf node is an MPN.
-
-%Once the most proving node $n$ is found, it is expanded, initializing all non-terminal children with $n.pn = 1, n.dn = 1$, winning children with $n.pn = 0, n.dn = \infty$ and losing children with $n.pn = \infty, n.dn = 0 $.
 
 Once the most proving node $n$ is found, it is expanded, initializing all non-terminal children with $n_i.pn = 1, n_i.dn = 1$, winning children with $n_i.pn = 0, n_i.dn = \infty$ and losing children with $n_i.pn = \infty, n_i.dn = 0 $, where $n_i$ refers to the $i^{th}$ child of $n$.
 
@@ -260,9 +260,9 @@ $\epsilon = 0.25$ has been shown to work well in practice.
 
 \section{Monte Carlo Tree Search}
 
-Based on statistics, doesn't need a heuristic evaluation function.
+For games where a very fast and strong evaluation function exists, alpha-beta is likely to be fast and strong, but no good heuristic is known for many games including Go and Havannah. Monte Carlo Tree Search (MCTS) is an algorithm for building and exploring a game tree that is based on statistics instead of a heuristic evaluation function. MCTS avoids using a heuristic by building its tree as guided by playing random games. While the random games have a very low playing strength, in aggregate random games will favour the player that is in a better position.
 
-Monte Carlo Tree Search is an algorithm for building and exploring a game tree. It consists of four phases which together are called a simulation. Each simulation adds some experience to the tree, updating the expected chance of winning for the nodes it traverses. These winning rates are stored as the number of wins and the number of simulations through a node. The four phases are:
+MCTS consists of four phases which together are called a simulation. Each simulation adds some experience to the tree, updating the expected chance of winning for the nodes it traverses. These winning rates are stored as the number of wins and the number of simulations through a node. The four phases are:
 \begin{description}
 \item[Descent] This phase descends the game tree from the root to a leaf node N in the game tree. At each node one of the available moves is selected according to some criteria based on the current winning rate and possibly heuristic knowledge. When the Upper Confidence Bounds (UCB) formula is used, this is called Upper Confidence Bounds applied to Trees (UCT), but other formulas such as RAVE have been developed and are commonly used.
 \item[Expansion] If the node N has experience from a previous simulation, its children are expanded, increasing the size of the tree.
@@ -270,45 +270,52 @@ Monte Carlo Tree Search is an algorithm for building and exploring a game tree. 
 \item[Back-propagation] The outcome of the random game in the rollout is back propagated to the moves chosen in the tree. The winning rate of the moves made by the player that won the rollout is increased while winning rate of the moves by the player that lost the rollout is decreased.
 \end{description}
 
+...diagram needed...
+
 These four steps are repeated continually until a stopping condition is reached, such as running out of time or memory. At this point a move is chosen by some criteria. The three most common criteria are: most simulations, most wins, and highest lower confidence bound on winning rate.
 
 Many extensions have been developed to increase the playing strength of MCTS. Some of these are explained below.
 
 \subsection{Rapid Action Value Estimation (RAVE)}
 
+Linear combination of RAVE values and real experience: $\beta*v_i + (1-\beta)*r_i$. Multiple formulas for doing the linear combination:
 \begin{itemize}
-\item RAVE
-	\begin{itemize}
-		\item $\beta*v_i + (1-\beta)*r_i$
-		\item $\beta = k/(k+n_i)$
-		\item $\beta = \sqrt{k/(3n_i+k)}$
-		\item $\beta = r_i/(n_i+r_i+4*n_i*r_i*b^2)$
-	\end{itemize}
-\item Heuristic Knowledge
-	\begin{itemize}
-		\item Game specific state knowledge
-		\item Experience initialization
-		\item Rave initialization
-		\item Extra term: $ + k/\sqrt{n_i}$
-	\end{itemize}
-\item Non-random rollouts
-	\begin{itemize}
-		\item Game specific knowledge/patterns
-		\item Weighted random, by rave or heuristic knowledge
-		\item Last good reply
-		\item forced moves/instant wins
-	\end{itemize}
+	\item $\beta = k/(k+n_i)$
+	\item $\beta = \sqrt{k/(3n_i+k)}$
+	\item $\beta = r_i/(n_i+r_i+4*n_i*r_i*b^2)$
+\end{itemize}
+
+
+\subsection{Heuristic Knowledge}
+
+This is game specific knowledge related to the current state.
+
+It can be used in one of these ways:
+\begin{itemize}
+	\item Experience initialization
+	\item Rave initialization
+	\item Extra term: $ + k/\sqrt{n_i}$
+\end{itemize}
+
+\subsection{Rollout Policy}
+
+\begin{itemize}
+	\item Game specific knowledge/patterns
+	\item Weighted random, by rave or heuristic knowledge
+	\item Last good reply
+	\item forced moves/instant wins
+\end{itemize}
+
+\subsection{Other extensions}
+
+\begin{itemize}
 \item parallelization
 \item dynamic widening
 \item Solution backups
 \item multiple rollouts per simulation
 \item avoid symmetries or transpositions
 \item first player urgency
-
 \end{itemize}
-
-
-
 
 
 
