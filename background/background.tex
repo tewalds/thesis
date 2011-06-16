@@ -4,7 +4,7 @@ Game playing programs all build a game tree, and then chose the most promising m
 
 \section{Minimax}
 
-The minimax algorithm is the foundation of all game playing algorithms and was invented before computers. The goal is the find the minimax value of a state or set of states, or equivalently for a set of moves. All values are from the perspective of the root player. The value of a node for the root player is the maximum of its children nodes, and the minimum for the opponents children. The pseudocode for a simple depth first search version is shown in Figure \ref{fig:minimaxcode}.
+The minimax algorithm is the foundation of all game playing algorithms and was invented before computers. The goal is the find the minimax value of a state or set of states, or equivalently for a set of moves, and then choose the move with the highest value. All values are from the perspective of the root player. The value of a node for the root player is the maximum of its children nodes, and the minimum for the opponents children. The pseudocode for a simple depth first search version is shown in Figure \ref{fig:minimaxcode}.
 
 \begin{figure}
 
@@ -34,7 +34,7 @@ int minimax(State state){
 
 \subsection{Negamax}
 
-Minimax uses values as taken from a fixed perspective of the root player. This complicates the code with having to minimize for one player and maximize for the other. Noting that $max(a,b) = −min(−a,-b)$, the duplication can be removed by negating the value each time we switch perspective. In this setup all values returned from an evaluation function must be from the perspective of the player who is making the move. The pseudocode for this transformation is shown in Figure \ref{fig:negamaxcode}.
+Minimax uses values as taken from a fixed perspective of the root player. This complicates the code with having to minimize for one player and maximize for the other. Noting that $max(a,b) = -min(-a,-b)$, the duplication can be removed by negating the value each time we switch perspective. In this setup all values returned from an evaluation function must be from the perspective of the player who is making the move. The pseudocode for this transformation is shown in Figure \ref{fig:negamaxcode}.
 
 \begin{figure}
 
@@ -96,9 +96,16 @@ The runtime of alpha-beta is exponential in the search depth, and the strength o
 
 Iterative deepening, when combined with a transposition table, also gives better move ordering. A nodes value from the previous iteration is going to be a more accurate estimate of the value of a node than a heuristic estimate without a search. As we saw in section \ref{sec:alphabeta}, better move ordering can lead to an exponential speedup, easily offsetting the overhead from searching the shallow depths multiple times.
 
+\subsection{History Heuristic}
+
+A good move ordering can lead to many cutoffs and the associated speed increase. The history heuristic is a game independent move ordering heuristic that works by giving higher priority to moves that lead to cutoffs elsewhere in the tree. If a particular move gives a cutoff, it's quite likely that it will also give a cutoff for all of its siblings and so should have a higher priority there. This does assume that similar moves in different part of the tree are related.
+
 \subsection{Other extensions}
 
-Negascout, history heuristic, killer move, quiescence search, etc. Are these worth including at all?
+Negascout, killer move, quiescence search, etc. Are these worth including at all?
+
+
+
 
 
 \section{Proof Number Search} \label{sec:PNS}
@@ -191,6 +198,52 @@ Figure \ref{fig:negamaxtree} shows the same tree as in Figure \ref{fig:pntree}, 
 
 Given this shift in perspective, the descent and update formulas need to be corrected. The new descent move selection is always to choose the child with the minimum delta. The new update formulas are: $$ n.\phi = \displaystyle\min\limits_{i=0}^k n_i.\delta, \quad n.\delta = \displaystyle\sum\limits_{i=0}^k n_i.\phi $$
 
+\begin{figure}
+
+\begin{lstlisting}
+int pns(State state){
+	Node root = initnode(state);
+	while(root.phi != 0 && root.delta != 0) search(root, state);
+	return (root.phi == 0 ? PROVEN : DISPROVEN);
+}
+void search(Node node, State state){
+	if(node.numchildren == 0){ //found MPN
+		foreach(state.successors as succ)
+			node.addchild(initnode(succ));
+	}else{
+		do{
+			Node child = node.child_min_delta();
+			search(child, state.move(child.move));
+			bool changed = updatePD(node);
+		}while(!changed && node.phi != 0 && node.delta != 0);
+	}
+}
+Node initnode(State state){
+	Node node; node.move = state.lastmove();
+	if(state.win()){       node.phi = 0;   node.delta = INF; }
+	else if(state.loss()){ node.phi = INF; node.delta = 0;   }
+	else{                  node.phi = 1;   node.delta = 1;   }
+	return node;
+}
+bool updatePD(node){
+	int phi = INF, delta = 0;
+	foreach(node.children as child){
+		phi = min(phi, child.delta);
+		delta = delta + child.phi;
+	}
+	bool changed = (node.phi == phi && node.delta == delta);
+	node.phi = phi; node.delta = delta;
+	return changed;
+}
+\end{lstlisting}
+
+\caption{Proof Number Search Pseudocode, shown in the negamax formulation, with the optimization to not propagate up if no changes occur}
+\label{fig:pnscode}
+\end{figure}
+
+The pseudocode for Proof Number Search in the negamax formulation is shown in Figure \ref{fig:pnscode}.
+
+
 \subsection{Transposition Table}
 
 Proof number search uses an explicit tree which must be kept in memory, but the tree required is often bigger than available memory. One common approach to bounding the memory needed is to store the nodes in a transposition table instead of an explicit tree. This has the benefit of bounded memory as well as saving computation and memory on transpositions, at the cost of having to recompute nodes that are replaced in the transposition table. Even when a node needs to be recomputed, its children are often still in the transposition table, allowing for a quick recomputation. In many cases the transposition table can be several orders of magnitude smaller than would be needed to store the explicit tree.
@@ -216,7 +269,7 @@ $$n_c.th_\phi = n.th_\delta + n_c.\phi - \displaystyle\sum\limits_{i=0}^k (n_i.\
 
 While the values initialized by $h$ are overwritten when its children are expanded, the $cost$ persists until the node is solved. Given fast and effective $h$ and $cost$ functions, DF-PN+ can solve problems significantly faster than DF-PN.
 
-\subsection{The $1+\epsilon{}$ Trick} \label{sec:epstrick}
+\subsection{The $1+\epsilon$ Trick} \label{sec:epstrick}
 
 One weakness of Proof Number search in general is it requires a large amount of memory to store the tree. Depth first variants and transposition tables help, but many problems we want to solve need trees that are several orders of magnitude bigger than available memory. In cases where the memory limit is particularly tight, DF-PN can spend a huge amount of time regenerating subtrees. To reduce this effect, the $1+\epsilon$ Trick \cite{pawlewicz2007epsilon} increases the thresholds exponentially instead of linearly.
 
@@ -233,7 +286,7 @@ $\epsilon = 0.25$ has been shown to work well in practice.
 
 For games where a very fast and strong evaluation function exists, alpha-beta is likely to be fast and strong, but no good heuristic is known for many games including Go and Havannah. Monte Carlo Tree Search (MCTS) is an algorithm for building and exploring a game tree that is based on statistics instead of a heuristic evaluation function. MCTS avoids using a heuristic by building its tree as guided by playing random games. While the random games have a very low playing strength, in aggregate random games will favour the player that is in a better position.
 
-MCTS consists of four phases which together are called a simulation. Each simulation adds some experience to the tree, updating the expected chance of winning for the nodes it traverses. These winning rates are stored as the number of wins and the number of simulations through a node. The four phases are:
+MCTS consists of four phases which together are called a simulation. Each simulation adds some experience to the tree, updating the expected chance of winning for the nodes it traverses. These winning rates are stored as the number of wins and the number of simulations through a node. The notation is: $n.v$ for the winning rate and $n.n$ for number of simulations. The four phases are:
 \begin{description}
 \item[Descent] This phase descends the game tree from the root to a leaf node N in the game tree. At each node one of the available moves is selected according to some criteria based on the current winning rate and possibly heuristic knowledge. When the Upper Confidence Bounds (UCB) formula is used, this is called Upper Confidence Bounds applied to Trees (UCT), but other formulas such as RAVE have been developed and are commonly used.
 \item[Expansion] If the node N has experience from a previous simulation, its children are expanded, increasing the size of the tree.
@@ -243,41 +296,101 @@ MCTS consists of four phases which together are called a simulation. Each simula
 
 ...diagram needed...
 
-These four steps are repeated continually until a stopping condition is reached, such as running out of time or memory. At this point a move is chosen by some criteria. The three most common criteria are: most simulations, most wins, and highest lower confidence bound on winning rate.
+These four steps are repeated continually until a stopping condition is reached, such as running out of time or memory. At this point a move is chosen by some criteria. The three most common criteria are: most simulations, most wins, and highest lower confidence bound on winning rate. The most simulations is the most conservative, but if a counter-move was found late in the game, it may still be the most simulated even if it doesn't have the highest winning rate. The most wins is a little less conservative and will favour a late new-comer if it has almost caught up. The highest winning rate is quite risky since it may favour a move that has a very small subtree where a good counter move exists but hasn't been found yet. To deal with that a lower bound can be used, but a large confidence interval should be used to avoid choosing risky moves.
+
+The pseudocode for MCTS is shown in Figure \ref{fig:mctscode}.
+
+\begin{figure}
+
+\begin{lstlisting}
+Move mcts(State state){
+	Node root = Node(state);
+	while(!timeout)
+		search(root, state);
+	return root.bestchild();
+}
+int search(Node node, State state){ //0 = loss, 1 = win
+	//rollout
+	if(node.numchildren == 0 && node.sims == 0){
+		while(!state.terminal())
+			state.randmove();
+		return (state.win() ? 1 : 0);
+	}
+
+	//expand
+	if(node.numchildren == 0)
+		foreach(state.successors as succ)
+			node.addchild(Node(succ));
+
+	//descent
+	Node best;
+	foreach(node.children as child)
+		if(best.value() < child.value())
+			best = child;
+
+	int outcome = 1 - search(best, state.move(best.move));
+
+	//back-propagate
+	best.sims += 1;
+	best.wins += outcome;
+	return outcome;
+}
+\end{lstlisting}
+
+\caption{Monte Carlo Tree Search Pseudocode, shown in the negamax formulation}
+\label{fig:mctscode}
+\end{figure}
+
 
 Many extensions have been developed to increase the playing strength of MCTS. Some of these are explained below.
 
-\subsection{Rapid Action Value Estimation (RAVE)}
+\subsection{UCT: Upper Confidence bounds as applied to Trees}
 
-Linear combination of RAVE values and real experience: $\beta*v_i + (1-\beta)*r_i$. Multiple formulas for doing the linear combination:
-\begin{itemize}
-	\item $\beta = k/(k+n_i)$
-	\item $\beta = \sqrt{k/(3n_i+k)}$
-	\item $\beta = r_i/(n_i+r_i+4*n_i*r_i*b^2)$
-\end{itemize}
+The most common and most famous formula in MCTS is UCT. It derives from Upper Confidence Bounds (UCB), which is famously used on the multi-armed bandit problem. It is used to balance exploitation and exploration when multiple options are available and each option returns a random distribution of reward. The amount of regret, ie the number of plays to non-optimal arms, should be minimized to maximize reward in the long term.
+
+The UCT formula is: $$n_i.v + c*\sqrt{\frac{ln(n.n)}{n_i.n}}$$ where $c$ is a tunable constant to balance the exploration rate. This formula is used in the descent phase of MCTS to chose which move to make. Intuitively, moves with high winning rate should be exploited more, but moves with a small number of simulations as compared to the parent should be explored to improve the confidence. This formula is guaranteed to converge on the optimal move given infinite time and memory.
 
 
-\subsection{Heuristic Knowledge}
 
-This is game specific knowledge related to the current state.
 
-It can be used in one of these ways:
-\begin{itemize}
-	\item Experience initialization
-	\item Rave initialization
-	\item Extra term: $ + k/\sqrt{n_i}$
-\end{itemize}
+\subsection{RAVE: Rapid Action Value Estimate}
+
+In basic MCTS many simulations are run per second, but the information about which moves were made during the rollouts is unused. A win or a loss is composed of many moves which contributed to that outcome, and often good moves during a rollout are also good moves if made earlier during the rollout or during the descent phase. This is a similar realization that lead to the History Heuristic. Thus, we can keep a winning rate for each move during the rollouts and use this to encourage exploration of moves that do well during rollouts. This information is gathered much quicker than pure experience, though it is less correlated to success, so should be phased out as real experience is gained. The notation used is $n.r$ for the rave winning rate and $n.m$ for the number of rave updates for a node.
+
+Usually rave experience and real experience are combined as a linear combination, starting as only rave experience and asymptotically approaching only real experience:
+$$ \beta*n_i.v + (1-\beta)*n_i.r $$
+Several formulas for $\beta$ have been proposed. The simplest two formulas for $\beta$ are $$\beta = \frac{k}{k+n_i.n}$$ $$\beta = \sqrt{\frac{k}{k+3*n_i.n}}$$ both of which have a tunable constant $k$ which represents the midpoint, so how many simulations are needed for the rave experience and real experience to have equal weight.
+
+David Silver computed an optimal formula for $\beta$ under the assumption of independence of estimates:
+$$\beta = \frac{n_i.r}{n_i.n+n_i.r+4*n_i.n*n_i.r*b^2}$$
+where $b$ is a tunable rave bias value.
+
+In practice, RAVE leads to a large increase in playing strength for games such as Go and Havannah where the assumption that a good move is also good if played earlier.
+
+\subsection{Heuristic Knowledge}\label{sec:heuristicknowledge}
+
+While UCT is guaranteed to converge given infinite time, game specific knowledge can encourage it to find good moves faster. When a node is expanded, its children all start with no experience, so the default policy is to chose between them randomly. The simulation is going to be more representative of a good game, and lead to a better understanding of the minimax value if it chooses a good move first. Eventually the best move will receive the majority of the simulations, and we'll do better if this is true right from the beginning. Each game has its own heuristics, and Havannah specific ones are described in later chapters, but the way these heuristics is used is game independent.
+
+The first way heuristic knowledge is used is to simply add fake experience to a node. Instead of initializing a node as $n_i.v = 0, n_i.n = 0$, good moves can be initialized with $n_i.v = c, n_i.v = c$, where c is a tunable constant, which effectively means that this node has some amount of wins attributed to it before any simulations have gone through it. This has the effect of allowing the node to look good for the first while even if it is unlucky, but the extra simulations will fade over time as the few extra wins becomes insignificant in the long run. Bad moves can similarly be initialized with fewer wins than simulations effectively depressing its early winning rate. Depending on your implementation, this may encourage the first few simulations to avoid the good moves though, due to their smaller confidence bounds compared to similar moves with the same high winning rate, which has the effect of making the grandparent move look bad. This knowledge could also be added as fake rave experience as well as or instead of to normal experience.
+
+The other way heuristic knowledge is used is to add a knowledge term to the value formula. This leaves the the experience and confidence bounds alone, but gives a boost for the first few simulations to nodes with higher knowledge. This has the added benefit of being able to order the nodes by how large of a boost is given. The knowledge term should fall off with increasing experience. Two suggested knowledge terms are: $$\frac{n_i.k}{log(n_i.n)}, \quad \frac{n_i.k}{\sqrt{n_i.n}}$$ where $n_i.k$ is the knowledge value for the node $n_i$.
+
 
 \subsection{Rollout Policy}
 
-\begin{itemize}
-	\item Game specific knowledge/patterns
-	\item Weighted random, by rave or heuristic knowledge
-	\item Last good reply
-	\item forced moves/instant wins
-\end{itemize}
+As mentioned above, the strength of MCTS is highly dependent on the average outcome of the rollouts being representative of the strength of the position. When a player who is in a good position has an easy defence to a devastating attack, but fails to defend, the outcome is not representative of the strength of the original position. Decreasing the randomness by enforcing defences against devastating attacks can bias the outcome, but usually leads to higher quality and more representative games, leading to a stronger player. Most rollout policies used in real programs are game specific, but a few game independent ones are mentioned here.
+
+Instead of pure random, a weighted random scheme can be used. Moves that have good experience in the tree can be selected at a higher probability to poor moves. This could be based on real experience, rave experience or heuristic knowledge as described in the section \ref{sec:heuristicknowledge}.
+
+The Last Good Reply scheme can be used, where the moves made by the player that won a rollout are saved for use in later rollouts when similar situations occur. When these moves fail to lead to a win in a later rollout, they may be removed from the list of replies.
+
+All possible moves can be checked to see if they lead to an instant win, in which case that move should be made. Similarly if this turn is skipped would each move lead to an instant loss if not made, in which case the defensive should be forced.
+
+
 
 \subsection{Other extensions}
+
+should any of these be described?
 
 \begin{itemize}
 \item parallelization
