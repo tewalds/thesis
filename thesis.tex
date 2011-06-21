@@ -1,3 +1,5 @@
+% vim: set wrap
+
 % This template was created May 4th, 2010 by Colin Ophus.  Since my thesis was accepted by the Library of Canada, I believe all of the formatting, page ordering, etc is correct.  To start, fill out all of the definitions below, ie every term after a \def. Then modify the existing chapters and create your own.
 
 % This is a thesis template designed to meet the University of Alberta electronic submission standards.
@@ -53,6 +55,10 @@
 \usepackage{fancybox}
 \usepackage{tikz}
 
+\usepackage{multirow}
+
+\usepackage{subfig}
+
 %for the euro symbol
 \usepackage[gen]{eurosym}
 
@@ -84,7 +90,7 @@ breakatwhitespace=false,    % sets if automatic breaks should only happen at whi
 \renewcommand{\bibsep}{10pt}
 \bibliographystyle{unsrtnat}
 
-% Customising headers 
+% Customising headers
 \usepackage{fancyhdr}
 \pagestyle{fancy}
 \rhead{}
@@ -114,7 +120,7 @@ breakatwhitespace=false,    % sets if automatic breaks should only happen at whi
 \let\org@hypertarget\hypertarget
 \renewcommand\hypertarget[2]{%
   \Hy@raisedlink{\org@hypertarget{#1}{}}#2%
-} 
+}
 \makeatother
 
 % Change bulleted lists - feel free to modify this
@@ -129,27 +135,28 @@ breakatwhitespace=false,    % sets if automatic breaks should only happen at whi
   \pagenumbering{roman}
   \setcounter{page}{-99}  % So that page numbering won't interfere, -ve numbers don't show
   \thispagestyle{empty}
-  
 
-%  \input{header}
-  
+
+  \input{header}
+
+
   % Table of contents
   \newpage
   \pdfbookmark[0]{Contents}{contents}
   \pdfbookmark[1]{Table of Contents}{toc}
   \normalsize
-  \tableofcontents 
-  
+  \tableofcontents
+
   % List of figures
   \newpage
   \pdfbookmark[1]{List of Figures}{listfigs}
   \listoffigures
 
   % List of tables
-  \newpage  
+  \newpage
   \pdfbookmark[1]{List of Tables}{listtables}
   \listoftables
-  
+
   % List of symbols
   % I have included my own symbols as an example. Modify as you see fit.
   \newpage
@@ -172,7 +179,7 @@ breakatwhitespace=false,    % sets if automatic breaks should only happen at whi
       $\delta$       & Disproof number at an OR node, proof number at an AND node \\
     \end{tabular}
   \end{center}
-  
+
   % List of abbreviations
   % Again here are some examples
   \newpage
@@ -198,10 +205,10 @@ breakatwhitespace=false,    % sets if automatic breaks should only happen at whi
       UCT           & Upper Confidence bounds as applied to Trees \\
 
     \end{tabular}
-  \end{center}  
-  
-  
-  
+  \end{center}
+
+
+
 
 % ********************************************************************************
   % Main thesis chapters
@@ -228,21 +235,13 @@ breakatwhitespace=false,    % sets if automatic breaks should only happen at whi
 
   \chapter[Conclusions]{\label{conclusion} \LARGE Conclusions}
   \input{conclusion/conclusion}
-  
-  % Appendices
-  % Comment out if you don't plan on having any appendices
+
   \appendix
 
   \chapter[Glossary]{\label{glossary} \LARGE Glossary}
   \input{glossary}
 
-%  \chapter[Statistical Derivations]
-%  {\label{appendstats} \LARGE Appendix: Statistical Derivations}
-%  \input{./appendices/appendices}  
-  
-  % Ta-da!  A thesis
-  % ********************************************************************************
-  
+
   % References - with commands to modify size and spacing
   \phantomsection
   \addcontentsline{toc}{chapter}{References}
@@ -251,3 +250,4 @@ breakatwhitespace=false,    % sets if automatic breaks should only happen at whi
   \bibliography{thesis}
 
 \end{document}
+
