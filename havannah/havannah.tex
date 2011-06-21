@@ -14,7 +14,7 @@
 \label{fig:rules}
 \end{figure}
 
-Havannah is a connection game invented in 1979 by Christian Freeling. It is a two player, zero-sum, perfect information game played on a hexagonal board. Each turn a player places a piece on the board in alternating play. Pieces are never removed from the board nor moved after their initial placement. The three winning conditions are shown in Figure \ref{fig:rules}:
+Havannah is a connection game invented in 1979 by Christian Freeling. It is a two player, zero-sum, perfect information game played on a hexagonal board. Each turn a player places a piece on the board in alternating play. Pieces are never moved nor removed from the board after their initial placement. The three winning conditions are shown in Figure \ref{fig:rules}:
 \begin{itemize}
 	\setlength{\itemsep}{0pt}
 	\setlength{\parskip}{0pt}
@@ -32,7 +32,7 @@ Havannah is played by a few thousand players around the world, primarily on Litt
 
 \section{Coordinate System}
 
-Several coordinate systems exist, but the one that will be used here is the one used in HavannahGui, in the Little Golem SGF files, and that has some nice mathematical properties. An example board is shown in Figure \ref{fig:coordinates} with each cell marked with its coordinate location. Next to it is a representation of a board as shown on a square grid. The empty points in the square grid are unused for the purposes of this representation. This square representation is what is often used to represent the board in memory. The size of the board is the number of cells along one short edge, or the radius of the board, not the diameter.
+Several coordinate systems exist, but the one that will be used here is the one used in HavannahGui, in the Little Golem SGF files, and that has some nice mathematical properties. An example board is shown in Figure \ref{fig:coordinates} with each cell marked with its coordinate location. Next to it is a representation of a board as shown on a square grid. The empty points in the square grid are unused for the purposes of this representation. This square representation is often used to represent the board in memory. The size of the board is the number of cells along one short edge, or the radius of the board, not the diameter.
 
 \begin{figure}
 \centering
@@ -76,7 +76,11 @@ Several coordinate systems exist, but the one that will be used here is the one 
 \label{fig:coordinates}
 \end{figure}
 
-This coordinate system can be defined mathematically as the integer points on the cube (x,y,z) in \{1-size, ... , size-1\}$^3$ where $x + y + z = 0$. This is a plane right through the cube that forms a hexagon of points. Given this representation, the distance between any two points can be calculated with $d = (|x_1-x_2| + |y_1-y_2| + |z_1-z_2|)/2$. Further mathematical analysis is available at \url{http://www.iwriteiam.nl/Havannah.html}, but is unneeded for the rest of this thesis.
+This coordinate system can be defined mathematically as the integer points on the cube (x,y,z) in \{1-size, ... , size-1\}$^3$ where $x + y + z = 0$. This is a plane right through the cube that forms a hexagon of points. Given this representation, the distance between any two points can be calculated with
+$$d = (|x_1-x_2| + |y_1-y_2| + |z_1-z_2|)/2$$
+and the edge and corner cells all have the property that
+$$(|x| + |y| + |z|)/2 = s$$
+where $s$ is the board size. Further mathematical analysis is available at \url{http://www.iwriteiam.nl/Havannah.html}, but is unneeded for the rest of this thesis.
 
 
 
@@ -171,7 +175,7 @@ Unfortunately these cells can have an effect on the outcome of Havannah. While t
 	\label{fig:ringdeadcells}
 \end{figure}
 
-Note that if the ring is made bigger than a simple 6-ring, any ring that uses the dead cell would also work going around it, so to create Havannah dead cell patterns, we simply add a stone of the opposing colour next to each existing stone. A few examples are shown in Figure \ref{fig:havdeadcells}. Unfortunately these patterns are so rare that they aren't worth looking for.
+Note that if the ring is made bigger than a simple 6-ring, any ring that uses the dead cell would also work going around it, so to create Havannah dead cell patterns, we simply add a stone of the opposing colour next to each existing stone to block the encircling 6-ring. A few examples are shown in Figure \ref{fig:havdeadcells}. Unfortunately these patterns are so rare that they aren't worth looking for.
 
 \begin{figure}
   \centering
@@ -211,7 +215,7 @@ Note that if the ring is made bigger than a simple 6-ring, any ring that uses th
 
 \subsection{Virtual Connections}
 
-A virtual connection is a connection between two stones or a stone and an edge that can be completed even without the first move. The simplest virtual connection is shown in Figure \ref{fig:simplevc}. The two black stones are virtually connected, since if white plays in one of the cells, black can complete the connection by playing in the other. In Hex, virtual connections are guaranteed since there is no reason to not complete the connection. In Figure \ref{fig:breakvc}, black has a virtual connection between his two groups, but white can force a defence against a ring threat as shown in Figure \ref{fig:brokenvc}, which allows white to sever the black virtual connection. These threats are rare in practice, but do occur and can't be ignored.
+A virtual connection is a connection between two stones or a stone and an edge that can be completed even if the opponent makes the first move. The simplest virtual connection is shown in Figure \ref{fig:simplevc}. The two black stones are virtually connected, since if white plays in one of the cells, black can complete the connection by playing in the other. In Hex, virtual connections are guaranteed since there is no reason to not complete the connection, but this is not true in Havannah. In Figure \ref{fig:breakvc}, black has a virtual connection between his two groups, but white can force a defence against a ring threat as shown in Figure \ref{fig:brokenvc}, which allows white to sever the black virtual connection. These threats are rare in practice, but do occur and can't be ignored.
 
 
 \begin{figure}
@@ -247,7 +251,7 @@ A virtual connection is a connection between two stones or a stone and an edge t
 
 \subsection{Draws}
 
-Unlike Hex where a filled board must have a winner, draws are possible in Havannah. Figure \ref{fig:draw} shows a game that ended in a draw. On the left is the final board. In the middle is the board once no wins are possible even if one of the players were to pass all his moves. On the right is the same board after move 20 after which the game is a proven draw. Draws are possible on all board sizes above 3. They occur occasionally on size 4 and but are very rare above on size 5 and above.
+Unlike Hex where a filled board must have a winner, draws are possible in Havannah. Figure \ref{fig:drawfilled} shows the filled board of the game that ended in a draw. Figure \ref{fig:drawnowin} is the board once no wins are possible even if one of the players were to pass all their remaining moves. Effectively all remaining cells are dead cells. Figure \ref{fig:drawproven} is the same board after move 20, where the game is already a proven draw. Draws are possible on all board sizes above 3. They occur occasionally on size 4 and but are very rare above on size 5 and above.
 
 \begin{figure}
 	\centering
@@ -274,7 +278,7 @@ Unlike Hex where a filled board must have a winner, draws are possible in Havann
 
 \subsection{Simultaneous forced wins: Race to win}
 
-In Hex, winning formations are mutually exclusive, so if one player has a forced win through virtual connections, he is guaranteed to win. In Havannah winning formations are not mutually exclusive. Figure \ref{fig:rules} shows 3 completed winning formations at the same time, though this is obviously not  valid board configuration. While virtual connections can be broken, it takes a specific formation to do so which is often not present, in which case the virtual connections are loosely guaranteed. Figure \ref{fig:racea} shows a situation where both players can force a win in 2 moves, so the first player to make a move wins. Figure \ref{fig:raceb} shows a situation where both players have a forced win in 3 moves, with black to move. White wins, however, since one of its moves threatens a faster ring victory, which is easily blocked, but which gives white the move advantage and the win.
+In Hex, winning formations are mutually exclusive, so if one player has a forced win through virtual connections, he is guaranteed to win. In Havannah winning formations are not mutually exclusive. Figure \ref{fig:rules} shows 3 completed winning formations at the same time, though this is obviously not  valid board configuration. While virtual connections can be broken, the formations needed to do so are often not present, in which case the virtual connections are guaranteed. A series of virtually connected stones or chains of stones that can lead to a guaranteed victory are called a Frame. Figure \ref{fig:racea} shows a situation where both players have a frame of length 2. This means they can force a win in 2 moves, so the first player to make a move wins. Figure \ref{fig:raceb} shows a situation where both players have a forced win in 3 moves, with black to move. One of white's moves threatens a faster ring victory, which is easily blocked, but which gives white the move advantage and the win.
 
 
 \begin{figure}
@@ -310,9 +314,9 @@ The rules of Havannah are quite simple, and the three win conditions are easy to
 
 Both bridges and forks can be found in near O(1) with the union find algorithm and some bit counting. Each stone placed on a corner or edge has a bit associated with that corner or edge set, and as stones form chains, the leader of the group ORs together the bits for all the corners and edges the group is connected to. Once the group reaches two corners or three edges, it's a win.
 
-For a simple implementation, this works well, but if the goal is to understand the distance to a win, this doesn't work so well. In that case, there are ${6 \choose 2} = 15$ possible bridge wins and ${6 \choose 3} = 20$ possible fork wins, which all must be considered independently.
+For a simple implementation, this works well, but humans think in terms of frames and spend a fair amount of time and effort building frames and counting how long a frame will take to complete. If the goal is to understand how long a frame will take to complete, the possible frames must be enumerated. In that case, there are ${6 \choose 2} = 15$ possible bridge wins and ${6 \choose 3} = 20$ possible fork wins, which must be considered independently.
 
-There are many more ways for rings to occur, and rings are much tougher to detect. One obvious way is to flood fill the board and look for unreachable areas. This method is not an incremental algorithm, so ignores the assertion from previous moves that there are no rings, and is very slow. There are two incremental approaches which are both very fast.
+There are many more ways for rings and ring frames to occur, and rings are much tougher to detect. One obvious way to detect rings is to flood fill the board and look for unreachable areas. This method is not an incremental algorithm, so ignores the assertion from previous moves that there are no rings, and is very slow. There are two incremental approaches, both of which are fast.
 
 The first is to do a depth-first search starting from the most recently placed stone, as shown in Figure \ref{fig:dfring}. The search is only started if the group is at least 6 stones, and if the last stone joins one group of stones twice. From the starting stone, it searches in 4 adjacent directions (4 is enough because any ring must start from one of the four directions even if it cycles back through the other two), continuing only in the forward direction to the next 3 stones. By avoiding any sharp turns, the minimum cycle is 6 and any path back to the starting stone is a ring.
 
@@ -374,7 +378,7 @@ The first is to do a depth-first search starting from the most recently placed s
 \end{figure}
 
 
-Ring detection can be also be done in O(1) time as shown in Figure \ref{fig:o1ring}. Rings occur when the most recently placed stone touches the same group twice with them being separated by empty space or a different group on either side. The only circumstance where that isn't true is a filled ring, which can only happen in a small number of ways and is easy to detect. Figure \ref{fig:o1ringa} shows the common case where a stone joins a group twice and has empty space in the middle of the ring and on the opposite side. If the center of the ring is filled, as is the case in Figure \ref{fig:o1ringb}, a check of the neighbours is only enough to deduce that it may be a ring. A small search for a possible 6-ring is enough to conclude whether it is a ring or not. The reason no bigger search is needed is because any bigger ring would have been found earlier by the other criteria. The worst case, shown in Figure \ref{fig:o1ringd} is when the stone has 5 adjacent neighbours, in which case 4 searches are needed.
+Ring detection can be also be done in O(1) time as shown in Figure \ref{fig:o1ring}. Rings occur when the most recently placed stone touches the same group twice with them being separated by empty space or a different group on either side. The only circumstance where that isn't true is a filled ring, which can only happen in a small number of ways and is easy to detect. Figure \ref{fig:o1ringa} shows the common case where a stone joins a group twice and has empty space in the middle of the ring and on the opposite side. If the center of the ring is filled, as is the case in Figure \ref{fig:o1ringb}, a check of the neighbours is only enough to deduce that it may be a ring. A small search for a possible 6-ring is enough to conclude whether it is a ring or not. The reason no bigger search is needed is because any bigger ring would have been found earlier by the other criteria. The worst case, shown in Figure \ref{fig:o1ringd} is when the stone has 5 adjacent neighbours, in which case 4 searches for 6-rings are needed.
 
 \begin{figure}
 	\centering

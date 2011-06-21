@@ -347,7 +347,9 @@ Many extensions have been developed to increase the playing strength of MCTS. So
 
 The most common and most famous formula in MCTS is UCT. It derives from Upper Confidence Bounds (UCB), which is famously used on the multi-armed bandit problem. It is used to balance exploitation and exploration when multiple options are available and each option returns a random distribution of reward. The amount of regret, ie the number of plays to non-optimal arms, should be minimized to maximize reward in the long term.
 
-The UCT formula is: $$n_i.v + c*\sqrt{\frac{\ln(n.n)}{n_i.n}}$$ where $c$ is a tunable constant to balance the exploration rate. This formula is used in the descent phase of MCTS to chose which move to make. Intuitively, moves with high winning rate should be exploited more, but moves with a small number of simulations as compared to the parent should be explored to improve the confidence. This formula is guaranteed to converge on the optimal move given infinite time and memory.
+The UCT formula is:
+\begin{equation}\label{eqn:uct} n_i.v + c*\sqrt{\frac{\ln(n.n)}{n_i.n}}\end{equation}
+where $c$ is a tunable constant to balance the exploration rate. This formula is used in the descent phase of MCTS to chose which move to make. Intuitively, moves with high winning rate should be exploited more, but moves with a small number of simulations as compared to the parent should be explored to improve the confidence. This formula is guaranteed to converge on the optimal move given infinite time and memory.
 
 
 
@@ -356,7 +358,7 @@ The UCT formula is: $$n_i.v + c*\sqrt{\frac{\ln(n.n)}{n_i.n}}$$ where $c$ is a t
 
 In basic MCTS many simulations are run per second, but the information about which moves were made during the rollouts is unused. A win or a loss is composed of many moves which contributed to that outcome, and often good moves during a rollout are also good moves if made earlier during the rollout or during the descent phase. This is a similar realization that lead to the History Heuristic. Thus, we can keep a winning rate for each move during the rollouts and use this to encourage exploration of moves that do well during rollouts. This information is gathered much quicker than pure experience, though it is less correlated to success, so should be phased out as real experience is gained. The notation used is $n.r$ for the rave winning rate and $n.m$ for the number of rave updates for a node.
 
-Usually rave experience and real experience are combined as a linear combination, starting as only rave experience and asymptotically approaching only real experience:
+Usually rave experience and real experience are combined as a linear combination, starting as only rave experience and asymptotically approaching only real experience, and replaces $n_i.v$ in Equation \ref{eqn:uct}:
 $$ \beta*n_i.v + (1-\beta)*n_i.r $$
 Several formulas for $\beta$ have been proposed. The simplest two formulas for $\beta$ are $$\beta = \frac{k}{k+n_i.n}$$ $$\beta = \sqrt{\frac{k}{k+3*n_i.n}}$$ both of which have a tunable constant $k$ which represents the midpoint, so how many simulations are needed for the rave experience and real experience to have equal weight.
 
@@ -364,7 +366,7 @@ David Silver computed an optimal formula for $\beta$ under the assumption of ind
 $$\beta = \frac{n_i.r}{n_i.n+n_i.r+4*n_i.n*n_i.r*b^2}$$
 where $b$ is a tunable rave bias value.
 
-In practice, RAVE leads to a large increase in playing strength for games such as Go and Havannah where the assumption that a good move is also good if played earlier.
+In practice, RAVE leads to a large increase in playing strength for games such as Go and Havannah where the assumption that a good move is also good if played earlier. The RAVE updates often lead to sufficiently large exploration that the constant in the UCT exploration term is set very low or even to 0, removing UCT exploration altogether.
 
 \subsection{Heuristic Knowledge}\label{sec:heuristicknowledge}
 
