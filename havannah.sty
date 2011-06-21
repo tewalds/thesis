@@ -22,6 +22,15 @@
 \newcommand\HWhiteStone{\node[
   circle,draw=black,inner sep=0.6pt,fill=white,
   minimum size=\HStoneDiameter]}
+\newcommand\HLightGrayStone{\node[
+  circle,draw=black,inner sep=0.6pt,fill=gray!20,
+  minimum size=\HStoneDiameter]}
+\newcommand\HGrayStone{\node[
+  circle,draw=black,inner sep=0.6pt,fill=gray!50,
+  minimum size=\HStoneDiameter]}
+\newcommand\HDarkGrayStone{\node[
+  circle,draw=black,inner sep=0.6pt,fill=gray!90,text=white,
+  minimum size=\HStoneDiameter]}
 \newcommand\HBlackStone{\node[
   circle,draw=black,inner sep=0.6pt,fill=black,text=white,
   minimum size=\HStoneDiameter]}
@@ -102,6 +111,9 @@
   color/white/.code={\def\h@player{\HWhiteStone}},
   color/black/.code={\def\h@player{\HBlackStone}},
   color/transparent/.code={\def\h@player{\HTransparentStone}},
+  color/light gray/.code={\def\h@player{\HLightGrayStone}},
+  color/gray/.code={\def\h@player{\HGrayStone}},
+  color/dark gray/.code={\def\h@player{\HDarkGrayStone}},
   label/.store in=\h@label,
   relative stone size/.store in=\h@relative@stone@size,
   relative stone size=0.75,
