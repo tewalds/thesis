@@ -1,15 +1,14 @@
-
-
+% vim: set wrap
 
 \section{Rules of Havannah}
 
 
-\begin{figure}[tb]
+\begin{figure}
 \centering
 \begin{HavannahBoard}[board size=6,coordinate style=classical]
 \HStoneGroup[color=black,label=$\mathcal F$]{e10,f10,g10,g9,h9,h8,i8,j8,h7,h6,h5,i5,i4,k8}
 \HStoneGroup[color=white,label=$\mathcal B$]{a1,a2,b3,c3,d4,e4,e3,e2,f2,f1}
-\HStoneGroup[color=transparent,label=$\mathcal R$]{e7,e8,d8,c8,b7,b6,b5,c5,d6}
+\HStoneGroup[color=gray,label=$\mathcal R$]{e7,e8,d8,c8,b7,b6,b5,c5,d6}
 \end{HavannahBoard}
 \caption{The three winning conditions as shown on a size 6 Havannah board}
 \label{fig:rules}
@@ -20,18 +19,91 @@ Havannah is a connection game invented in 1979 by Christian Freeling. It is a tw
 	\setlength{\itemsep}{0pt}
 	\setlength{\parskip}{0pt}
 	\setlength{\parsep}{0pt}
-	\item A \textbf{Fork} is a group of stones that links 3 edges (corners are not part of either edge), for example the stones labelled $\mathcal F$ in Figure \ref{fig:rules}
 	\item A \textbf{Bridge} is a group of stones that links 2 corners, for example the stones labelled $\mathcal B$ in Figure \ref{fig:rules}
+	\item A \textbf{Fork} is a group of stones that links 3 edges (corners are not part of either edge), for example the stones labelled $\mathcal F$ in Figure \ref{fig:rules}
 	\item A \textbf{Ring} is a group of stones that surround at least one cell (which can be empty or filled by either player), for example the stones labelled $\mathcal R$ in Figure \ref{fig:rules}
 \end{itemize}
 
-Havannah is played on board sizes ranging from 4 to 10 cells per side. Better players prefer bigger boards due to the larger component of strategy compared to the small boards where tactics dominate. In 2002, Christian Freeling offered \euro 1000 for any program that beats him in just one in ten games on size 10 by 2012.
+Havannah is played on board sizes ranging from 4 to 10 cells per side. Stronger players prefer bigger boards due to the larger component of strategy compared to the small boards where tactics dominate. In 2002, Christian Freeling offered \euro 1000 for any program that beats him in just one in ten games on size 10 by 2012.
 
 Havannah is played by a few thousand players around the world, primarily on Little Golem\footnote{http://littlegolem.net} and similar sites. It is also played by computer programs at the International Computer Games Association games tournaments yearly.
 
 
-Coordinate system...
 
+\section{Coordinate System}
+
+Several coordinate systems exist, but the one that will be used here is the one used in HavannahGui, in the Little Golem SGF files, and that has some nice mathematical properties. An example board is shown in Figure \ref{fig:coordinates} with each cell marked with its coordinate location. Next to it is a representation of a board as shown on a square grid. The empty points in the square grid are unused for the purposes of this representation. This square representation is what is often used to represent the board in memory. The size of the board is the number of cells along one short edge, or the radius of the board, not the diameter.
+
+\begin{figure}
+\centering
+
+	\subfloat[]{
+		\begin{HavannahBoard}[board size=3,coordinate style=classical,hex height=22pt]
+		\HStoneGroup[color=white,label=a1]{a1}
+		\HStoneGroup[color=white,label=a2]{a2}
+		\HStoneGroup[color=white,label=a3]{a3}
+		\HStoneGroup[color=white,label=b1]{b1}
+		\HStoneGroup[color=white,label=b2]{b2}
+		\HStoneGroup[color=white,label=b3]{b3}
+		\HStoneGroup[color=white,label=b4]{b4}
+		\HStoneGroup[color=white,label=c1]{c1}
+		\HStoneGroup[color=white,label=c2]{c2}
+		\HStoneGroup[color=white,label=c3]{c3}
+		\HStoneGroup[color=white,label=c4]{c4}
+		\HStoneGroup[color=white,label=c5]{c5}
+		\HStoneGroup[color=white,label=d2]{d2}
+		\HStoneGroup[color=white,label=d3]{d3}
+		\HStoneGroup[color=white,label=d4]{d4}
+		\HStoneGroup[color=white,label=d5]{d5}
+		\HStoneGroup[color=white,label=e3]{e3}
+		\HStoneGroup[color=white,label=e4]{e4}
+		\HStoneGroup[color=white,label=e5]{e5}
+		\end{HavannahBoard}
+	}
+	\subfloat[]{
+		\raisebox{58pt}{
+		\begin{tabular}{c|ccccc}
+		  &  1 &  2 &  3 &  4 &  5 \\ \hline
+		a & a1 & a2 & a3 &    &    \\
+		b & b1 & b2 & b3 & b4 &    \\
+		c & c1 & c2 & c3 & c4 & c5 \\
+		d &    & d2 & d3 & d4 & d5 \\
+		e &    &    & e3 & e4 & e5 \\
+		\end{tabular}
+		}
+	}
+\caption{(a) The coordinates as drawn on a size 3 board. (b) The same board as represented on a square grid.}
+\label{fig:coordinates}
+\end{figure}
+
+This coordinate system can be defined mathematically as the integer points on the cube (x,y,z) in \{1-size, ... , size-1\}$^3$ where $x + y + z = 0$. This is a plane right through the cube that forms a hexagon of points. Given this representation, the distance between any two points can be calculated with $d = (|x_1-x_2| + |y_1-y_2| + |z_1-z_2|)/2$. Further mathematical analysis is available at \url{http://www.iwriteiam.nl/Havannah.html}, but is unneeded for the rest of this thesis.
+
+
+
+\section{Complexity}
+
+A very naive calculation of the state space complexity of Havannah is simply $T_N = 3^N$ where N is the number of cells on the board. This includes many states that are unreachable purely based on the players having an uneven number of moves, such as all cells being played by player 1. A much more accurate calculation is the sum of states where both players have made equal number of moves plus the sum of all states where player 1 has  made on more move. This can be expressed as the formula:
+$$T_N = \sum_{i = 0}^{(N-1)/2} [ {N \choose i}*{N-i \choose i} + {N \choose i + 1}*{N - i - 1 \choose i}]$$
+Dividing these two gives an error of approximately $\sqrt{N}$, so a fairly close approximation of $T_N = 3^N/\sqrt{N}$. These do not take symmetry or rotations into account, which gives approximately a 12 fold reduction in states. It also doesn't take the rules of the game into account, so includes positions where both players have winning formations or one player has multiple winning formations.
+
+The state space complexity of Havannah is shown in Figure \ref{table:complexity}, with various other board games listed for comparison.
+
+\begin{table}
+  \centering
+\begin{tabular}{lrr|lr}
+Havannah & Cells & States       & Game      & States \\ \hline
+Size 4   &    37 & $6*10^{15}$  & Connect 4 & $10^{14}$ \\
+Size 5   &    61 & $1*10^{27}$  & Checkers  & $10^{20}$ \\
+Size 6   &    91 & $2*10^{41}$  & Hex 8x8   & $10^{29}$ \\
+Size 7   &   127 & $3*10^{58}$  & Hex 11x11 & $10^{56}$ \\
+Size 8   &   169 & $3*10^{78}$  & Chess     & $10^{46}$ \\
+Size 9   &   217 & $2*10^{101}$ & Go 9x9    & $10^{38}$ \\
+Size 10  &   271 & $1*10^{127}$ & Go 19x19  & $10^{171}$\\
+
+\end{tabular}
+	\caption{State complexity of Havannah. Other board games are shown for comparison.}
+	\label{table:complexity}
+\end{table}
 
 \section{Properties of Havannah}
 
@@ -39,47 +111,314 @@ Havannah is considered hard to play for computers for several reasons including 
 
 \subsection{Dead Cells}
 
-Strong hex programs reduce the moves under consideration by avoiding playing in dead cells. Dead cells which are cells that provably cannot affect the outcome of the game. Figure \ref{fig:hexdeadcells} shows the Hex dead cells. Unfortunately due to rings, these cells can have an effect on the outcome, so larger patterns are needed.
+Strong hex programs reduce the moves under consideration by avoiding playing in dead cells. Dead cells are cells that provably cannot affect the outcome of the game. The five basic Hex dead cells are shown in Figure \ref{fig:hexdeadcells}. They are dead because any chain of stones that passes through them already has a path through the existing stones.
 
-\begin{figure}[tb]
+\begin{figure}
   \centering
 \begin{tabular}{ccccc}
-\begin{HavannahBoard}[board size=2,coordinate style=classical,show coordinates=false,hex height=12pt]
+\begin{HavannahBoard}[board size=2,coordinate style=classical,show coordinates=false]
 \HStoneGroup[color=white]{a1,b1,c2,c3}
 \end{HavannahBoard}
 &
-\begin{HavannahBoard}[board size=2,coordinate style=classical,show coordinates=false,hex height=12pt]
+\begin{HavannahBoard}[board size=2,coordinate style=classical,show coordinates=false]
 \HStoneGroup[color=black]{b3}
 \HStoneGroup[color=white]{a1,b1,c2}
 \end{HavannahBoard}
 &
-\begin{HavannahBoard}[board size=2,coordinate style=classical,show coordinates=false,hex height=12pt]
+\begin{HavannahBoard}[board size=2,coordinate style=classical,show coordinates=false]
 \HStoneGroup[color=black]{a2,b3}
 \HStoneGroup[color=white]{b1,c2}
 \end{HavannahBoard}
 &
-\begin{HavannahBoard}[board size=2,coordinate style=classical,show coordinates=false,hex height=12pt]
+\begin{HavannahBoard}[board size=2,coordinate style=classical,show coordinates=false]
 \HStoneGroup[color=black]{a1,a2,b3}
 \HStoneGroup[color=white]{c2}
 \end{HavannahBoard}
 &
-\begin{HavannahBoard}[board size=2,coordinate style=classical,show coordinates=false,hex height=12pt]
+\begin{HavannahBoard}[board size=2,coordinate style=classical,show coordinates=false]
 \HStoneGroup[color=black]{a1,a2,b3,c3}
 \end{HavannahBoard}
 
 \end{tabular}
-	\caption{Hex dead cell patterns: The center of each pattern cannot help either player form a winning connection.}
+	\caption{Hex dead cell patterns: The center of each pattern cannot help either player form a winning connection in Hex.}
 	\label{fig:hexdeadcells}
 \end{figure}
 
+Unfortunately these cells can have an effect on the outcome of Havannah. While they cannot affect a fork or a bridge connection, they can still be part of a winning ring which surrounds one of the existing stones as illustrated in Figure \ref{fig:ringdeadcells}. This idea can be used against all 5 of the simple hex dead cell patterns in numerous ways.
 
-\begin{itemize}
-\item dead cells are complicated and uncommon
-\item both players can have forced wins, race to completion
-\item virtual connections can be broken
-\item multiple win conditions that interact in complex ways
-\item fork isn't a simple connection
-\item multiple ways for each win condition to occur (ie any 2 corners or 3 edges)
-\item rings can't be found as easily
-\item ties are possible
-\end{itemize}
+
+\begin{figure}
+  \centering
+\begin{tabular}{ccc}
+\begin{HavannahBoard}[board size=3,coordinate style=classical,show coordinates=false]
+\HStoneGroup[color=white]{b2,c2,d3,d4}
+\end{HavannahBoard}
+&
+\begin{HavannahBoard}[board size=3,coordinate style=classical,show coordinates=false]
+\HStoneGroup[color=white]{b2,c2,d3,d4}
+\HStoneGroup[color=light gray,label=1]{b1}
+\HStoneGroup[color=light gray,label=2]{c1}
+\HStoneGroup[color=light gray,label=3]{d2}
+\HStoneGroup[color=light gray,label=4]{c3}
+\end{HavannahBoard}
+&
+\begin{HavannahBoard}[board size=3,coordinate style=classical,show coordinates=false]
+\HStoneGroup[color=white]{b1,b2,c1,c3,d2,d3}
+\HStoneGroup[color=light gray]{c2,d4}
+\end{HavannahBoard}
+\end{tabular}
+	\caption{Starting with the hex dead cell pattern on the left, and adding stones 1-4 leads to the ring on the right which intersects the dead cell pattern}
+	\label{fig:ringdeadcells}
+\end{figure}
+
+Note that if the ring is made bigger than a simple 6-ring, any ring that uses the dead cell would also work going around it, so to create Havannah dead cell patterns, we simply add a stone of the opposing colour next to each existing stone. A few examples are shown in Figure \ref{fig:havdeadcells}. Unfortunately these patterns are so rare that they aren't worth looking for.
+
+\begin{figure}
+  \centering
+\begin{tabular}{ccccc}
+
+\begin{HavannahBoard}[board size=3,coordinate style=classical,show coordinates=false,hex height=14pt]
+\HStoneGroup[color=white]{b2,c2,d3,d4}
+\HStoneGroup[color=black]{b1,e4}
+\end{HavannahBoard}
+&
+\begin{HavannahBoard}[board size=3,coordinate style=classical,show coordinates=false,hex height=14pt]
+\HStoneGroup[color=white]{b2,c2,d3, b4}
+\HStoneGroup[color=black]{c4, b1,e3}
+\end{HavannahBoard}
+&
+\begin{HavannahBoard}[board size=3,coordinate style=classical,show coordinates=false,hex height=14pt]
+\HStoneGroup[color=white]{c2,d3, b4}
+\HStoneGroup[color=black]{b3,c4, d2}
+\end{HavannahBoard}
+&
+\begin{HavannahBoard}[board size=3,coordinate style=classical,show coordinates=false,hex height=14pt]
+\HStoneGroup[color=white]{d3, a2,b4}
+\HStoneGroup[color=black]{b2,b3,c4, e3}
+\end{HavannahBoard}
+&
+\begin{HavannahBoard}[board size=3,coordinate style=classical,show coordinates=false,hex height=14pt]
+\HStoneGroup[color=black]{b2,b3,c4,d4}
+\HStoneGroup[color=white]{b1,a3,d5}
+\end{HavannahBoard}
+
+\end{tabular}
+	\caption{A few examples of Havannah dead cell patterns}
+	\label{fig:havdeadcells}
+\end{figure}
+
+
+
+\subsection{Virtual Connections}
+
+A virtual connection is a connection between two stones or a stone and an edge that can be completed even without the first move. The simplest virtual connection is shown in Figure \ref{fig:simplevc}. The two black stones are virtually connected, since if white plays in one of the cells, black can complete the connection by playing in the other. In Hex, virtual connections are guaranteed since there is no reason to not complete the connection. In Figure \ref{fig:breakvc}, black has a virtual connection between his two groups, but white can force a defence against a ring threat as shown in Figure \ref{fig:brokenvc}, which allows white to sever the black virtual connection. These threats are rare in practice, but do occur and can't be ignored.
+
+
+\begin{figure}
+  \centering
+
+	\subfloat[]{\label{fig:simplevc}
+		\begin{HexBoard}[board size=2,show coordinates=false,show hexes=true]
+		\HHexGroup {a1,b1,a2,b2}
+		\draw [thick,dotted] (a1)..controls(a2)..(b2);
+		\draw [thick,dotted] (a1)..controls(b1)..(b2);
+		\HStoneGroup[color=black]{a1,b2}
+		\end{HexBoard}
+	}
+	\subfloat[]{\label{fig:breakvc}
+		\begin{HavannahBoard}[board size=3,coordinate style=classical,show coordinates=false]
+		\HStoneGroup[color=black]{d2,d3,c4,b4}
+		\HStoneGroup[color=white]{b1,c2,a2,b3}
+		\end{HavannahBoard}
+	}
+	\subfloat[]{\label{fig:brokenvc}
+		\begin{HavannahBoard}[board size=3,coordinate style=classical,show coordinates=false]
+		\HStoneGroup[color=black]{d2,d3,c4,b4}
+		\HStoneGroup[color=white]{b1,c2,a2,b3}
+		\HGame{c3,a1,d4}
+		\end{HavannahBoard}
+	}
+
+	\caption{(a) The simplest virtual connection. (b) Virtual connections are not guaranteed. (c) A threat can force a response other than maintaining the connection.}
+	\label{fig:ringvc}
+\end{figure}
+
+
+
+\subsection{Draws}
+
+Unlike Hex where a filled board must have a winner, draws are possible in Havannah. Figure \ref{fig:draw} shows a game that ended in a draw. On the left is the final board. In the middle is the board once no wins are possible even if one of the players were to pass all his moves. On the right is the same board after move 20 after which the game is a proven draw. Draws are possible on all board sizes above 3. They occur occasionally on size 4 and but are very rare above on size 5 and above.
+
+\begin{figure}
+	\centering
+	\subfloat[]{\label{fig:drawfilled}
+		\begin{HavannahBoard}[board size=4,coordinate style=classical,show coordinates=false]
+		\HGame{g7,a1,f5,g4,e3,d2,e2,d1,c2,d3,c3,f7,d6,b4,a4,b5,a3,e5,c4,b3, a2,c1,b1,f6,e4,d4,g6,e7,d7,b2,c5, f3,f4,g5,d5,e6,c6}
+		\end{HavannahBoard}
+	}
+	\subfloat[]{\label{fig:drawnowin}
+		\begin{HavannahBoard}[board size=4,coordinate style=classical,show coordinates=false]
+		\HGame{g7,a1,f5,g4,e3,d2,e2,d1,c2,d3,c3,f7,d6,b4,a4,b5,a3,e5,c4,b3, a2,c1,b1,f6,e4,d4,g6,e7,d7,b2,c5}
+		\end{HavannahBoard}
+	}
+	\subfloat[]{\label{fig:drawproven}
+		\begin{HavannahBoard}[board size=4,coordinate style=classical,show coordinates=false]
+		\HGame{g7,a1,f5,g4,e3,d2,e2,d1,c2,d3,c3,f7,d6,b4,a4,b5,a3,e5,c4,b3}%, a2,c1,b1,f6,e4,d4,g6,e7,d7,b2,c5}
+		\end{HavannahBoard}
+	}
+	\caption{(a) A filled board ending as a draw. (b) After move 30 no wins are possible. (c) Proven draw after move 20 if both players maintain their virtual connections.}
+	\label{fig:draw}
+\end{figure}
+
+
+
+\subsection{Simultaneous forced wins: Race to win}
+
+In Hex, winning formations are mutually exclusive, so if one player has a forced win through virtual connections, he is guaranteed to win. In Havannah winning formations are not mutually exclusive. Figure \ref{fig:rules} shows 3 completed winning formations at the same time, though this is obviously not  valid board configuration. While virtual connections can be broken, it takes a specific formation to do so which is often not present, in which case the virtual connections are loosely guaranteed. Figure \ref{fig:racea} shows a situation where both players can force a win in 2 moves, so the first player to make a move wins. Figure \ref{fig:raceb} shows a situation where both players have a forced win in 3 moves, with black to move. White wins, however, since one of its moves threatens a faster ring victory, which is easily blocked, but which gives white the move advantage and the win.
+
+
+\begin{figure}
+	\centering
+	\subfloat[]{\label{fig:racea}
+		\begin{HavannahBoard}[board size=4,coordinate style=classical,show coordinates=false]
+		\HStoneGroup[color=white]{d1,e3,g4}
+		\HStoneGroup[color=black]{a4,c5,d7}
+		\end{HavannahBoard}
+	}
+	\subfloat[]{\label{fig:raceb}
+		\begin{HavannahBoard}[board size=4,coordinate style=classical,show coordinates=false]
+		\HStoneGroup[color=white]{b5,c5,c4,b3,c2}
+		\HStoneGroup[color=black]{f6,f5,e3,f7}
+		\end{HavannahBoard}
+	}
+	\subfloat[]{\label{fig:racec}
+		\begin{HavannahBoard}[board size=4,coordinate style=classical,show coordinates=false]
+		\HStoneGroup[color=white]{b5,c5,c4,b3,c2}
+		\HStoneGroup[color=black]{f6,f5,e3,f7}
+		\HGame[first player=black]{g6,a3,a4,b2,f4,c1}
+		\end{HavannahBoard}
+	}
+	\caption{(a) Both players have a forced win in 2 moves, the first player to move wins. (b) Both players have a forced win in 3 moves, black to move. (c) White gains a free move with a ring threat to win.}
+	\label{fig:race}
+\end{figure}
+
+
+
+\subsection{Multiple and Complex Win Conditions}
+
+The rules of Havannah are quite simple, and the three win conditions are easy to describe, but they aren't so simple to reason about.
+
+Both bridges and forks can be found in near O(1) with the union find algorithm and some bit counting. Each stone placed on a corner or edge has a bit associated with that corner or edge set, and as stones form chains, the leader of the group ORs together the bits for all the corners and edges the group is connected to. Once the group reaches two corners or three edges, it's a win.
+
+For a simple implementation, this works well, but if the goal is to understand the distance to a win, this doesn't work so well. In that case, there are ${6 \choose 2} = 15$ possible bridge wins and ${6 \choose 3} = 20$ possible fork wins, which all must be considered independently.
+
+There are many more ways for rings to occur, and rings are much tougher to detect. One obvious way is to flood fill the board and look for unreachable areas. This method is not an incremental algorithm, so ignores the assertion from previous moves that there are no rings, and is very slow. There are two incremental approaches which are both very fast.
+
+The first is to do a depth-first search starting from the most recently placed stone, as shown in Figure \ref{fig:dfring}. The search is only started if the group is at least 6 stones, and if the last stone joins one group of stones twice. From the starting stone, it searches in 4 adjacent directions (4 is enough because any ring must start from one of the four directions even if it cycles back through the other two), continuing only in the forward direction to the next 3 stones. By avoiding any sharp turns, the minimum cycle is 6 and any path back to the starting stone is a ring.
+
+\begin{figure}
+	\centering
+	\subfloat[]{\label{fig:dfringa}
+		\begin{HavannahBoard}[board size=3,coordinate style=classical,show coordinates=false]
+		\HStoneGroup[color=light gray]{b2}
+		\HStoneGroup[color=white]{c3,c4,b4,a3,a2, d3,d4}
+		\draw [thick,->] (b2) -- (a1);
+		\draw [thick,->] (b2) -- (b1);
+		\draw [thick,->] (b2) -- (c2);
+		\draw [thick,->] (b2) -- (c3);
+		\end{HavannahBoard}
+	}
+	\subfloat[]{\label{fig:dfringb}
+		\begin{HavannahBoard}[board size=3,coordinate style=classical,show coordinates=false]
+		\HStoneGroup[color=light gray]{b2}
+		\HStoneGroup[color=white]{c3,c4,b4,a3,a2, d3,d4}
+		\draw [thick]    (b2) -- (c3);
+		\draw [thick,->] (c3) -- (d3);
+		\draw [thick,->] (c3) -- (d4);
+		\draw [thick,->] (c3) -- (c4);
+		\end{HavannahBoard}
+	}
+	\subfloat[]{\label{fig:dfringc}
+		\begin{HavannahBoard}[board size=3,coordinate style=classical,show coordinates=false]
+		\HStoneGroup[color=light gray]{b2}
+		\HStoneGroup[color=white]{c3,c4,b4,a3,a2, d3,d4}
+		\draw [thick]    (b2) -- (c3);
+		\draw [thick] (c3) -- (d3);
+		\draw [thick] (c3) -- (d4);
+		\draw [thick] (c3) -- (c4);
+		\draw [thick,->] (d3) -- (d2);
+		\draw [thick,->] (d3) -- (e3);
+		\draw [thick,->] (d3) -- (e4);
+		\draw [thick,->] (d4) -- (e4);
+		\draw [thick,->] (d4) -- (e5);
+		\draw [thick,->] (d4) -- (d5);
+		\draw [thick,->] (c4) -- (d5);
+		\draw [thick,->] (c4) -- (c5);
+		\draw [thick,->] (c4) -- (b4);
+		\end{HavannahBoard}
+	}
+	\subfloat[]{\label{fig:dfringd}
+		\begin{HavannahBoard}[board size=3,coordinate style=classical,show coordinates=false]
+		\HStoneGroup[color=light gray]{b2}
+		\HStoneGroup[color=white]{c3,c4,b4,a3,a2, d3,d4}
+		\draw [thick]    (b2) -- (c3);
+		\draw [thick]    (c3) -- (c4);
+		\draw [thick]    (c4) -- (b4);
+		\draw [thick,->] (b4) -- (a3);
+		\draw [thick,->] (a3) -- (a2);
+		\draw [thick,->] (a2) -- (b2);
+		\end{HavannahBoard}
+	}
+	\caption{Depth-first ring detection. Gray stone is the most recently placed and the start of the search. (a) Search after 1 step. (b) Search after 2 steps. (c) Search after 3 steps. (d) Search after 6 steps, ring found.}
+	\label{fig:dfring}
+\end{figure}
+
+
+Ring detection can be also be done in O(1) time as shown in Figure \ref{fig:o1ring}. Rings occur when the most recently placed stone touches the same group twice with them being separated by empty space or a different group on either side. The only circumstance where that isn't true is a filled ring, which can only happen in a small number of ways and is easy to detect. Figure \ref{fig:o1ringa} shows the common case where a stone joins a group twice and has empty space in the middle of the ring and on the opposite side. If the center of the ring is filled, as is the case in Figure \ref{fig:o1ringb}, a check of the neighbours is only enough to deduce that it may be a ring. A small search for a possible 6-ring is enough to conclude whether it is a ring or not. The reason no bigger search is needed is because any bigger ring would have been found earlier by the other criteria. The worst case, shown in Figure \ref{fig:o1ringd} is when the stone has 5 adjacent neighbours, in which case 4 searches are needed.
+
+\begin{figure}
+	\centering
+	\subfloat[]{\label{fig:o1ringa}
+		\begin{HavannahBoard}[board size=3,coordinate style=classical,show coordinates=false]
+		\HStoneGroup[color=light gray]{b2}
+		\HStoneGroup[color=white]{c3,c4,b4,a3,a2, d3,d4}
+		\draw [thick,->] (b2) -- (a2);
+		\draw [thick,->] (b2) -- (c3);
+		\end{HavannahBoard}
+	}
+	\subfloat[]{\label{fig:o1ringb}
+		\begin{HavannahBoard}[board size=3,coordinate style=classical,show coordinates=false]
+		\HStoneGroup[color=light gray]{b2}
+		\HStoneGroup[color=white]{c3,c4,b4,a3,a2, d3,d4,b3}
+		\draw [thick,->] (b2) -- (c3);
+		\draw [thick,->] (b2) -- (a2);
+		\draw [thick,->] (b2) -- (b3);
+		\end{HavannahBoard}
+	}
+	\subfloat[]{\label{fig:o1ringc}
+		\begin{HavannahBoard}[board size=3,coordinate style=classical,show coordinates=false]
+		\HStoneGroup[color=light gray]{b2}
+		\HStoneGroup[color=white]{c3,c4,b4,a3,a2, d3,d4,b3}
+		\draw [thick]    (b2) -- (c3) -- (c4) -- (b4) -- (a3) -- (a2) -- (b2);
+		\end{HavannahBoard}
+	}
+	\subfloat[]{\label{fig:o1ringd}
+		\begin{HavannahBoard}[board size=3,coordinate style=classical,show coordinates=false]
+		\HStoneGroup[color=light gray]{c3}
+		\HStoneGroup[color=white]{d3,d4,c4,b3,b2, d2,e4,e5,c5,a3,a2,b1}
+		\draw [thick,->] (c3) -- (d3);
+		\draw [thick,->] (c3) -- (d4);
+		\draw [thick,->] (c3) -- (c4);
+		\draw [thick,->] (c3) -- (b3);
+		\draw [thick,->] (c3) -- (b2);
+		\draw [dotted]    (c3) -- (c4) -- (b4) -- (a3) -- (a2) -- (b2) -- (c3);
+		\draw [dotted]    (c3) -- (d4) -- (d5) -- (c5) -- (b4) -- (b3) -- (c3);
+		\draw [dotted]    (c3) -- (d3) -- (e4) -- (e5) -- (d5) -- (c4) -- (c3);
+		\draw [dotted]    (c3) -- (b2) -- (b1) -- (c1) -- (d2) -- (d3) -- (c3);
+
+		\end{HavannahBoard}
+	}
+	\caption{O(1) ring detection. Gray stone is the most recently placed. (a) Stone joins the white group twice with an empty stone between the two white stones, obviously a ring enclosing the empty stone. (b) Stone joins the white group three times, no empty stone, leads to (c) a tiny search. (d) Worst case has 5 neighbours, does 4 tiny searches.}
+	\label{fig:o1ring}
+\end{figure}
+
