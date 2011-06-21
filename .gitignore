@@ -9,3 +9,7 @@
 *.toc
 *.pdf
 *.properties.xml
+*.make
+*.d
+*.fls
+
