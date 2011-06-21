@@ -1,3 +1,5 @@
+% vim: set wrap
+
 
 Here are general game playing concepts and definitions:
 
@@ -8,7 +10,7 @@ Here are general game playing concepts and definitions:
 \item[Breadth First Search] In a breadth first search, all nodes at a specific depth will be considered before any nodes at a deeper depth, in increasing depth. This is very memory intensive as all nodes up to the specified depth must be kept in memory.
 \item[Depth First Search] In a depth first search (DFS), nodes are considered in a depth-first way. The full subtree of a node will be explored before any of its siblings will be explored. This is very memory efficient since it only needs to store the nodes along the path from the root to the current node, but leaves many nodes near the root unexplored for long periods of time.
 \item[Game Complexity] is the size of the state space, sometimes taking transpositions into account. This can either be the number of unique positions or the number of possible games.
-\item[Game Tree] Games can be represented as a game tree. Each position in the game is a node, and each move is an edge in the graph connecting the position before the move to the position after the move. When there are multiple paths to a position, it can be represented as separate nodes, leading to a tree, or combined as a single node, leading to a directed acyclic graph (DAG). Some games have loops, where a position can be reached multiple times in a single game, leading to a directed graph.
+\item[Game Tree] A game can be represented as a game tree. Each position in the game is a node, and each move is an edge in the graph connecting the position before the move to the position after the move. When there are multiple paths to a position, the position can be represented as separate nodes, leading to a tree, or combined as a single node, leading to a directed acyclic graph (DAG). Some games have loops, where a position can be reached multiple times in a single game, leading to a directed graph.
 \item[Hash Value] A hash value is a representative number of a state used to detect transpositions. Transpositions all have the same hash value, but different states have different hash values. Often collisions are possible so two states that aren't a transposition have the same hash value, but this is very rare as large hash values (usually 64 bit unsigned integers) are used.
 \item[Heuristic] A heuristic function takes a position and returns a value associated with the position. This value often represents the likelihood of winning from that position, but can also be just an abstract number that can be compared against other values to order nodes or moves.
 \item[History] All moves leading from some starting position, usually the beginning of the game, to the current state.
@@ -28,3 +30,4 @@ Here are general game playing concepts and definitions:
 \item[Zobrist Hash] In some search spaces a hash value can be built up incrementally by XORing a random string associated with each move against a previous hash value.
 
 \end{description}
+
