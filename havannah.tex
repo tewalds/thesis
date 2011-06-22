@@ -87,7 +87,7 @@ where $s$ is the board size. Further mathematical analysis is available at \url{
 \section{Complexity}
 
 A very naive calculation of the state space complexity of Havannah is simply $T_N = 3^N$ where N is the number of cells on the board. This includes many states that are unreachable purely based on the players having an uneven number of moves, such as all cells being played by player 1. A much more accurate calculation is the sum of states where both players have made equal number of moves plus the sum of all states where player 1 has  made on more move. This can be expressed as the formula:
-$$T_N = \sum_{i = 0}^{(N-1)/2} [ {N \choose i}*{N-i \choose i} + {N \choose i + 1}*{N - i - 1 \choose i}]$$
+$$T_N = \sum_{i = 0}^{(N-1)/2} {N \choose i}*{N-i \choose i} + {N \choose i + 1}*{N - i - 1 \choose i}$$
 Dividing these two gives an error of approximately $\sqrt{N}$, so a fairly close approximation of $T_N = 3^N/\sqrt{N}$. These do not take symmetry or rotations into account, which gives approximately a 12 fold reduction in states. It also doesn't take the rules of the game into account, so includes positions where both players have winning formations or one player has multiple winning formations.
 
 The state space complexity of Havannah is shown in Figure \ref{table:complexity}, with various other board games listed for comparison.
@@ -378,7 +378,7 @@ The first is to do a depth-first search starting from the most recently placed s
 \end{figure}
 
 
-Ring detection can be also be done in O(1) time as shown in Figure \ref{fig:o1ring}. Rings occur when the most recently placed stone touches the same group twice with them being separated by empty space or a different group on either side. The only circumstance where that isn't true is a filled ring, which can only happen in a small number of ways and is easy to detect. Figure \ref{fig:o1ringa} shows the common case where a stone joins a group twice and has empty space in the middle of the ring and on the opposite side. If the center of the ring is filled, as is the case in Figure \ref{fig:o1ringb}, a check of the neighbours is only enough to deduce that it may be a ring. A small search for a possible 6-ring is enough to conclude whether it is a ring or not. The reason no bigger search is needed is because any bigger ring would have been found earlier by the other criteria. The worst case, shown in Figure \ref{fig:o1ringd} is when the stone has 5 adjacent neighbours, in which case 4 searches for 6-rings are needed.
+Ring detection can be also be done in O(1) time as shown in Figure \ref{fig:o1ring}. Rings occur when the most recently placed stone touches the same group twice with them being separated by empty space or a different group on either side. The only circumstance where that isn't true is a filled ring, which can only happen in a small number of ways and is easy to detect. Figure \ref{fig:o1ringa} shows the common case where a stone joins a group twice and has empty space in the middle of the ring and on the opposite side. If the center of the ring is filled, as is the case in Figure \ref{fig:o1ringb}, a check of the neighbours is only enough to deduce that it may be a ring. A small search for a possible 6-ring is enough to conclude whether it is a ring or not. The reason no bigger search is needed is because any bigger ring would have been found earlier by the other criteria. The worst case, shown in Figure \ref{fig:o1ringd} is when the stone has 5 adjacent neighbours, in which case 3 searches for 6-rings are needed.
 
 \begin{figure}
 	\centering
@@ -409,7 +409,7 @@ Ring detection can be also be done in O(1) time as shown in Figure \ref{fig:o1ri
 	\subfloat[]{\label{fig:o1ringd}
 		\begin{HavannahBoard}[board size=3,coordinate style=classical,show coordinates=false]
 		\HStoneGroup[color=light gray]{c3}
-		\HStoneGroup[color=white]{d3,d4,c4,b3,b2, d2,e4,e5,c5,a3,a2,b1}
+		\HStoneGroup[color=white]{d3,d4,c4,b3,b2, e4,e5,c5,a3,a2}
 		\draw [thick,->] (c3) -- (d3);
 		\draw [thick,->] (c3) -- (d4);
 		\draw [thick,->] (c3) -- (c4);
@@ -418,11 +418,9 @@ Ring detection can be also be done in O(1) time as shown in Figure \ref{fig:o1ri
 		\draw [dotted]    (c3) -- (c4) -- (b4) -- (a3) -- (a2) -- (b2) -- (c3);
 		\draw [dotted]    (c3) -- (d4) -- (d5) -- (c5) -- (b4) -- (b3) -- (c3);
 		\draw [dotted]    (c3) -- (d3) -- (e4) -- (e5) -- (d5) -- (c4) -- (c3);
-		\draw [dotted]    (c3) -- (b2) -- (b1) -- (c1) -- (d2) -- (d3) -- (c3);
-
 		\end{HavannahBoard}
 	}
-	\caption{O(1) ring detection. Gray stone is the most recently placed. (a) Stone joins the white group twice with an empty stone between the two white stones, obviously a ring enclosing the empty stone. (b) Stone joins the white group three times, no empty stone, leads to (c) a tiny search. (d) Worst case has 5 neighbours, does 4 tiny searches.}
+	\caption{O(1) ring detection. Gray stone is the most recently placed. (a) Stone joins the white group twice with an empty stone between the two white stones, obviously a ring enclosing the empty stone. (b) Stone joins the white group three times, no empty stone, leads to (c) a tiny search. (d) Worst case has 5 neighbours, does 3 tiny searches.}
 	\label{fig:o1ring}
 \end{figure}
 
