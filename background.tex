@@ -343,7 +343,7 @@ int search(Node node, State state){ //0 = loss, 1 = win
 
 Many extensions have been developed to increase the playing strength of MCTS. Some of these are explained below.
 
-\subsection{UCT: Upper Confidence bounds as applied to Trees}
+\subsection{UCT: Upper Confidence bounds as applied to Trees}\label{sec:uct}
 
 The most common and most famous formula in MCTS is UCT. It derives from Upper Confidence Bounds (UCB), which is famously used on the multi-armed bandit problem. It is used to balance exploitation and exploration when multiple options are available and each option returns a random distribution of reward. The amount of regret, ie the number of plays to non-optimal arms, should be minimized to maximize reward in the long term.
 
@@ -354,7 +354,7 @@ where $c$ is a tunable constant to balance the exploration rate. This formula is
 
 
 
-\subsection{RAVE: Rapid Action Value Estimate}
+\subsection{RAVE: Rapid Action Value Estimate}\label{sec:rave}
 
 In basic MCTS many simulations are run per second, but the information about which moves were made during the rollouts is unused. A win or a loss is composed of many moves which contributed to that outcome, and often good moves during a rollout are also good moves if made earlier during the rollout or during the descent phase. This is a similar realization that lead to the History Heuristic. Thus, we can keep a winning rate for each move during the rollouts and use this to encourage exploration of moves that do well during rollouts. This information is gathered much quicker than pure experience, though it is less correlated to success, so should be phased out as real experience is gained. The notation used is $n.r$ for the rave winning rate and $n.m$ for the number of rave updates for a node.
 
