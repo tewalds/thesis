@@ -1,5 +1,32 @@
 % vim: set wrap
 
+
+\section{Symmetry and Transpositions}
+
+
+There are 37 cells on a size 4 board, but from the starting position only 6 of them are distinct. The rest are equivalent by symmetry or rotation, since the board has 6-fold rotational symmetry and 2-fold mirror symmetries. By storing a zobrist hash for each of the 12 possible board orientations and taking the minimum value as the representative hash, symmetries can be found and ignored. Note that this does not find transpositions, only 1 ply symmetries. As stones are placed, the number of possible symmetries decreases dramatically. Symmetrical moves are ignored for the first five ply at node expansion. After 5 ply, the cost of calculating the extra hash values and finding the unique moves becomes too expensive and so symmetry detection is turned off for all later moves.
+
+
+\section{Monte Carlo Tree Search Solving}
+
+Section \ref{sec:proofbackups} showed that MCTS is capable of solving non-trivial positions in reasonable time. This section will show a couple improvements to MCTS that make it better suited to solving harder positions.
+
+\subsection{Early Draw Detection}
+
+Simply checking the outcome at node expansion, and backing up wins, losses and draws as described in Section \ref{sec:proofbackups} above is enough to solve any position, given sufficient time. Certain interesting positions in Havannah lead to many draws, and can take prohibitively long to solve without more advanced draw detection. Figure \ref{fig:drawnowin} shows a board where no wins are possible after move 30 even if both players cooperate. Without draw detection this will take $7!$ simulations to enumerate and prove.
+
+The three win conditions need to be checked to see if any wins of that type are possible. Fork and bridge wins can be detected with the heuristic described in Section \ref{sec:distwin}. Start a flood fill from each corner and edge for each player. If none of the empty cells can reach three edges or two corners for a player, then that player can not form a fork or bridge. One player being unable to form a bridge or fork does not preclude the other player from doing so.
+
+Potential rings can be detected by checking for encirclability. A group of stones that connects to an edge or corner cannot be encircled by the opponent. Any cell that is next to a group that connects to an edge or corner also cannot be encircled by the other player. If no cells can be encircled, then no rings are possible.
+
+If no forks, bridges or rings are possible for a player, then that player cannot win, and so should force a draw if possible. If both players are forcing a draw, then it is a proven draw.
+
+
+
+
+
+\section{Other}
+
 \begin{itemize}
 \item symmetry
 \item Proof Number Search
@@ -26,3 +53,4 @@
 
 
 \end{itemize}
+

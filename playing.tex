@@ -90,7 +90,7 @@ MCTS builds a large tree with real experience, and then makes a move. Most of th
 %\end{figure}
 
 
-\section{Proof Backups}
+\section{Proof Backups}\label{sec:proofbackups}
 
 A game of havannah ends when one of the winning conditions are met, and this can happen with only a few stones on the board or with the board full of stones. The game rarely finishes with only a few stones in practice, but frequently the tree includes positions where one player fails to respond correctly to a threat, leading the other player to win. MCTS is quickly guided away from allowing these threats by the winning rate dropping, favouring the correct response, but by default it will continue trying this losing move as long as it looks better than the others, which could take quite a while. Late in the game, the game tree may be sufficiently small that the entire tree could be enumerated, but normal MCTS will take a long time to converge on the correct move. If instead terminal nodes were marked, and winning moves were backed up as losing moves for their parents and sets of losing moves are backed up as winning moves for their parents, full proof trees could be constructed, allowing faster detection of threats, and proving the outcome of moves late in the game. This has been suggested before, and was explored by Lorentz in 2010 with moderate success \cite{lorentz2011improving}.
 
@@ -417,7 +417,7 @@ The results are shown in Figure \ref{fig:groupsize}. A winning rate over 60\% ca
 \end{figure}
 
 
-\subsection{Distance to Win}
+\subsection{Distance to Win}\label{sec:distwin}
 
 Most havannah games end in either a bridge or a fork victory. It is possible to approximate the minimum number of moves needed to achieve these win conditions by doing a flood fill from each corner and edge, and counting the distance to each cell from the starting point. The distance between two cells that are part of the same group is counted as zero, since no additional stones are needed to connect them. The distance between any other neighbouring cells is one. Once the distances to each corner and edge are computed, the number of moves needed to achieve a victory from that cell is the sum of the shortest 2 distances to corners or the sum of the shortest 3 distances to edges. This method does not consider ring victories at all. It can over-estimate the number of moves since it doesn't consider that the paths to the corners or edges may share part of the path. It does not consider any moves by the opponent, which could easily increase the distance by blocking an essential move, or even make the connection impossible. It does not take virtual connections into account. All that said, it is a reasonable estimate in many cases. It is slow to compute, as it requires 12 flood fills for each player, but in doing so computes the minimum distance for every cell on the board. An example is shown in Figure \ref{fig:distances}, showing the minimum distances for white, black, and the minimum of the two. Note how the immediate threat has a distance of 1. White has low distances on the right where it dominates, while black has low distances on the left where it dominates.
 
@@ -637,9 +637,9 @@ Figure \ref{fig:lgr} shows the results. LGR only works on size 4, while LGRF is 
 \end{figure}
 
 
-\subsection{Ring rule variations}
+\subsection{Ring rule variations}\label{sec:ringrules}
 
-The three win conditions happen at different frequencies on different board sizes, as shown in Table \ref{tab:wintypes}. On size 4, a bridge is the most frequent win type followed by fork and the relatively infrequent ring victory. As the board size increases, it becomes harder for bridges and forks to form as they scale with the size of the board, but rings become relatively easier, because their size is independent of the board size and a local effect. Given empty space on the board, a ring is likely to occur by making random moves. Rings are quite easy to block however, so while they happen frequently in random games, they are rare in real games. MCTS is very sensitive to the outcome of rollouts not being representative of the strength of the starting position, so this mismatch is a problem.
+The three win conditions happen at different frequencies on different board sizes, as shown in Table \ref{tab:wintypes}. On size 4, a bridge is the most frequent win type followed by fork and the relatively infrequent ring victory. As the board size increases, it becomes harder for bridges and forks to form as they scale with the size of the board, but rings become relatively easier, because their size is independent of the board size and a local effect. Given empty space on the board, a ring is likely to occur purely by making random moves. Rings are quite easy to block however, so while they happen frequently in random games, they are rare in real games. MCTS is very sensitive to the outcome of rollouts not being representative of the strength of the starting position, so this mismatch is a problem.
 
 \begin{figure}
 	\centering
@@ -743,7 +743,7 @@ The results are shown in Figure \ref{fig:ringdepth}, showing results as high as 
 
 \subsubsection{Ring size}
 
-The most common rings are the simple size 6 ring, which are very easy to block. We may want to allow larger rings while still ignoring the easy to block 6 ring. Using the depth-first ring check described in Chapter \ref{havannah}, we can ignore rings smaller than a minimum value. In this test we start by allowing all rings, and after every N moves, we increase the minimum size by 1 for variable N. After the first N this would imply only rings of size 7 or bigger, then 8 or bigger, etc. Here we set N as a fraction of the remaining empty cells.
+The most common rings are the simple size 6 ring, which are very easy to block. We may want to allow larger rings while still ignoring the easy to block 6 ring. Using the search-based ring check described in Section \ref{sec:ringimple}, we can ignore rings smaller than a minimum value. In this test we start by allowing all rings, and after every N moves, we increase the minimum size by 1 for variable N. After the first N this would imply only rings of size 7 or bigger, then 8 or bigger, etc. Here we set N as a fraction of the remaining empty cells.
 
 The results are shown in Figure \ref{fig:ringsize}, again showing reasonable results on board sizes 5 and 6 with a winning rate of 60\%, but failing to show any improvement on larger board sizes. A fraction of 0.7 or 0.9 is so high that it never reaches a minimum size bigger than 7, though this is enough to ignore size 6 rings.
 
