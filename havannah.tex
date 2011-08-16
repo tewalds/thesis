@@ -323,17 +323,21 @@ Unlike Hex where a filled board must have a winner, draws are possible in Havann
 
 
 
-\subsection{Multiple and Complex Win Conditions}
+\section{Implementation}
 
-The rules of Havannah are quite simple, and the three win conditions are easy to describe, but they are not simple to reason about.
+The rules of Havannah are quite simple, and the three win conditions are easy to describe, but the implementation of the rules is not as obvious. This section will describe their implementation.
 
-Both bridges and forks can be found in near O(1) with the union find algorithm and bit counting. Each stone placed on a corner or edge has a bit associated with that corner or edge, and as stones form chains, the leader of the group ORs together the bits for all the corners and edges the group is connected to. Once the group reaches two corners or three edges, that group forms a win condition.
+\subsection{Fork and Bridge connections}
 
-For a simple implementation, this works well, but humans think in terms of frames and spend a fair amount of time and effort building frames and counting how many moves a frame will take to complete. If the goal is to understand how long a frame will take to complete, the possible frames must be enumerated. In that case, there are ${6 \choose 2} = 15$ possible bridge wins and ${6 \choose 3} = 20$ possible fork wins, which must be considered independently.
+Both forks and bridges can be found in near $O(1)$ using the union find algorithm. Each group includes a set of 12 bits, where each bit is associated with an edge or corner. Stones that are placed on a corner or edge set the associated bit on their group. As groups join, the bits for the groups are ORed together for the new formed group. Once a group reaches two corners or three edges, that group forms a win condition.
 
-There are many more ways for rings and ring frames to occur, and rings are much tougher to detect. One obvious way to detect rings is to flood fill the board and look for unreachable areas. This method is not an incremental algorithm, so ignores the assertion from previous moves that there are no rings, and is very slow. There are two incremental approaches, both of which are fast.
+\subsection{Rings}\label{sec:ringimpl}
 
-The first is to do a depth-first search starting from the most recently placed stone, as shown in Figure \ref{fig:dfring}. The search is only started if the group is at least 6 stones, and if the last stone joins one group of stones twice. From the starting stone, it searches in 4 adjacent directions (4 is enough because any ring must start from one of the four directions even if it cycles back through the other two), continuing only in the forward direction to the next 3 stones. By avoiding any sharp turns, the minimum cycle is 6 and any path back to the starting stone is a ring. This method does have a fairly bad worst case, but is very fast in practice because the ring check can be skipped after most moves. It has the advantage that the size of the ring can be found by counting the number of steps to reach a previously reached stone.
+There are many more ways for rings to occur, and rings are much tougher to detect. There are two incremental approaches, both of which are fast.
+
+\subsubsection{Search}
+
+The first approach is to start a search from the most recently placed stone, as shown in Figure \ref{fig:dfring}. This search could be a recursive depth-first search or a breadth-first search. The recursive depth-first search was faster in testing, but the breadth-first variant is shown in Figure \ref{fig:dfring} for clarity. The search is only started if the group is at least 6 stones, and if the last stone joins one group of stones twice. From the starting stone, it searches in 4 adjacent directions (4 is enough because any ring must start from one of the four directions even if it cycles back through the other two), continuing only in the forward direction to the next 3 stones. By avoiding any sharp turns, the minimum cycle is 6 and any path back to the starting stone is a ring. This method does have a fairly bad worst case, but is very fast in practice because the ring check can be skipped after most moves. It has the advantage that properties of the ring can be computed based on the stones that form it, as will be described in more detail in Section \ref{sec:ringrules}.
 
 \begin{figure}
 	\centering
@@ -388,12 +392,14 @@ The first is to do a depth-first search starting from the most recently placed s
 		\draw [thick,->] (a2) -- (b2);
 		\end{HavannahBoard}
 	}
-	\caption{Depth-first ring detection. Gray stone is the most recently placed and the start of the search. (a) Search after 1 step. (b) Search after 2 steps. (c) Search after 3 steps. (d) Search after 6 steps, ring found.}
+	\caption{Search ring detection. Gray stone is the most recently placed and the start of the search. (a) Search after 1 step. (b) Search after 2 steps. (c) Search after 3 steps. (d) Search after 6 steps, ring found.}
 	\label{fig:dfring}
 \end{figure}
 
 
-Ring detection can be also be done in O(1) time as shown in Figure \ref{fig:o1ring}. Rings occur when the most recently placed stone touches the same group twice with them being separated on both sides by empty space or the opponents pieces. The only circumstance where that isn't true is a filled 6-ring, which can only happen in a small number of ways and is easy to detect. Figure \ref{fig:o1ringa} shows the common case where a stone joins a group twice and has empty space in the middle of the ring and on the opposite side. If the center of the ring is filled, as is the case in Figure \ref{fig:o1ringb}, a check of the neighbours is enough to deduce that it might be a ring, but the remaining three cells must be checked to conclude it is a ring. The reason no bigger search is needed is because any bigger ring that passes through the newly placed stone would already be a ring passing through the existing stones and therefore would have been found earlier. The worst case, shown in Figure \ref{fig:o1ringd} is when the stone has 5 adjacent neighbours, in which case 3 searches for 6-rings are needed. This method is very fast in general, but does need to be done before joining the groups for the edge/corner checking. Doing the check before placing the stone likely means the conditions that allow the depth-first method to be skipped aren't known to be satisfied, meaning the check must be done for every move.
+\subsubsection{Patterns}
+
+Ring detection can be also be done in O(1) time as shown in Figure \ref{fig:o1ring} by using basic pattern detection. Rings occur when the most recently placed stone touches the same group twice with them being separated on both sides by empty space or the opponents pieces. The only circumstance where that isn't true is a filled 6-ring, which can only happen in a small number of ways and is easy to detect. Figure \ref{fig:o1ringa} shows the common case where a stone joins a group twice and has empty space in the middle of the ring and on the opposite side. If the center of the ring is filled, as is the case in Figure \ref{fig:o1ringb}, a check of the neighbours is enough to deduce that it might be a ring, but the remaining three cells must be checked to conclude it is a ring. The reason no bigger search is needed is because any bigger ring that passes through the newly placed stone would already be a ring passing through the existing stones and therefore would have been found earlier. The worst case, shown in Figure \ref{fig:o1ringd} is when the stone has 5 adjacent neighbours, in which case 3 extra checks for 6-rings are needed. This method is very fast in general, but does need to be done before joining the groups for the edge/corner checking. Doing the check before placing the stone likely means the conditions that allow the depth-first method to be skipped aren't known to be satisfied, meaning the check must be done for every move.
 
 \begin{figure}
 	\centering
@@ -435,7 +441,7 @@ Ring detection can be also be done in O(1) time as shown in Figure \ref{fig:o1ri
 		\draw [dotted]    (c3) -- (d3) -- (e4) -- (e5) -- (d5) -- (c4) -- (c3);
 		\end{HavannahBoard}
 	}
-	\caption{O(1) ring detection. Gray stone is the most recently placed. (a) Stone joins the white group twice with an empty stone between the two white stones, obviously a ring enclosing the empty stone. (b) Stone joins the white group three times, no empty stone, leads to (c) a tiny search. (d) Worst case has 5 neighbours, does 3 tiny searches.}
+	\caption{O(1) ring detection. Gray stone is the most recently placed. (a) Stone joins the white group twice with an empty stone between the two white stones, obviously a ring enclosing the empty stone. (b) Stone joins the white group three times, no empty stone, leads to (c) a tiny search. (d) Worst case has 5 neighbours, and does 3 extra checks.}
 	\label{fig:o1ring}
 \end{figure}
 
