@@ -4,8 +4,9 @@
 
 %Several papers have been written about playing Havannah before. Teytaud\cite{teytaud2010creating} showed that UCT and RAVE work well in Havannah. Fossel\cite{fossel2010monte} showed that RAVE works well and tested a few other features. He found that checking for a winning moves (mate-in-one moves) in the rollout improves the playouts and therefore the strength. Lorentz\cite{lorentz2011improving} also tested checking for mate-in-one moves as well as blocking those moves and found an improvement. He used a rollout policy to encourage playing near previous stones. He backed up proven positions within the tree, potentially solving the root board position. He also found success with progressive widening.
 
+These are early days for developing strong Havannah programs. To date, no one has been able to come up with an effective heuristic evaluation function. Given this, MCTS is a good starting point for writing a Havannah player. This chapter will explore the performance of various search algorithms and enhancements using Havannah.
 
-Given that no strong heuristic is known for Havannah, MCTS is a good starting point for writing a Havannah player. UCT has strong guarantees about eventual optimality, so is the first baseline. After a few games, an exploration constant of 0.9 was chosen as a reasonable value to test against. RAVE has been shown by Teytaud to be superior, and this finding will be confirmed in Section \ref{sec:playingrave}. For all tests after, a RAVE player will be used as the baseline player. The RAVE baseline has no UCT exploration, keeps the tree between moves, and does 2-ply node expansion backups. All data points are based on several hundred games played with 5s per move unless otherwise stated.
+UCT has strong guarantees about eventual optimality, so is the first baseline. After a few games, an exploration constant of 0.9 was chosen as a reasonable value to test against. RAVE has been shown by Teytaud to be superior, and this finding will be confirmed in Section \ref{sec:playingrave}. For all tests thereafter, a RAVE player will be used as the baseline player. The RAVE baseline has no UCT exploration, keeps the tree between moves, and does 2-ply node expansion backups. All data points are based on several hundred games played with 5 seconds per move unless otherwise stated.
 
 
 \section{Rave}\label{sec:playingrave}
@@ -68,7 +69,7 @@ Rave was introduced in Section \ref{sec:rave} as a way to use the information fr
 
 \section{Keep Tree Between Moves}
 
-MCTS builds a large tree with real experience, and then makes a move. Most of the final move selection strategies will chose a large subtree usually consisting of more than 25\% of the effort that went into this move choice, but sometimes consisting of as much as 95\% of the work. This is real experience that would be duplicated after the next move if it was thrown away. The opponents move is unknown at this point, but is frequently the expected reply, again often maintaining 25\% or more of the tree. This remaining tree is a pure advantage with no downsides. Keeping the the tree has about a 53\% winning rate against disabling keeping the tree. This is not a huge improvement on its own, but is easy and free. It should compound with pondering and proof backups quite well.
+MCTS builds a large tree with real experience, and then makes a move. Most of the final move selection strategies will chose a large subtree usually consisting of more than 25\% of the effort that went into this move choice, but sometimes consisting of as much as 95\% of the work. This is real experience that would be duplicated after the next move if it was thrown away. The opponent's move is unknown at this point, but is frequently the expected reply, again often maintaining 25\% or more of the tree. Keeping the remaining tree is a pure advantage with no downsides. Keeping the the tree has about a 53\% winning rate against disabling keeping the tree. This is not a huge improvement on its own, but is easy and free. It should compound with pondering and proof backups quite well.
 
 %\begin{figure}
 %\centering
@@ -92,9 +93,9 @@ MCTS builds a large tree with real experience, and then makes a move. Most of th
 
 \section{Proof Backups}\label{sec:proofbackups}
 
-A game of havannah ends when one of the winning conditions are met, and this can happen with only a few stones on the board or with the board full of stones. The game rarely finishes with only a few stones in practice, but frequently the tree includes positions where one player fails to respond correctly to a threat, leading the other player to win. MCTS is quickly guided away from allowing these threats by the winning rate dropping, favouring the correct response, but by default it will continue trying this losing move as long as it looks better than the others, which could take quite a while. Late in the game, the game tree may be sufficiently small that the entire tree could be enumerated, but normal MCTS will take a long time to converge on the correct move. If instead terminal nodes were marked, and winning moves were backed up as losing moves for their parents and sets of losing moves are backed up as winning moves for their parents, full proof trees could be constructed, allowing faster detection of threats, and proving the outcome of moves late in the game. This has been suggested before, and was explored by Lorentz in 2010 with moderate success \cite{lorentz2011improving}.
+A game of Havannah ends when one of the winning conditions is met, and this can happen with only a few stones on the board or with the board full of stones. The game rarely finishes with only a few stones in practice, but frequently the tree includes positions where one player fails to respond correctly to a threat, leading the other player to win. MCTS is quickly guided away from allowing these threats by the winning rate dropping, favouring the correct response. By default it will continue trying this losing move as long as it looks better than the others, which could take quite a while. Late in the game, the game tree may be sufficiently small that the entire tree could be enumerated, but normal MCTS will take a long time to converge on the correct move. If instead terminal nodes were marked, and winning moves were backed up as losing moves for their parents and sets of losing moves are backed up as winning moves for their parents, full proof trees could be constructed, allowing faster detection of threats, and proving the outcome of moves late in the game. This has been suggested before, and was explored by Lorentz in 2010 with moderate success \cite{lorentz2011improving}.
 
-Terminal nodes are found in the expansion phase. If a winning move is found, the expansion stops and the parent node is marked as a win. If no winning moves are found, then threats that must be blocked are looked for. If the opponent has one immediate threat, a macro move is generated, where that is the only valid response, and the simulation is continued, expanding its children. If the opponent has two immediate threats, only one could be blocked, and so the expansion is stopped and the parent is marked as a loss.
+Terminal nodes are found in the expansion phase. If a winning move is found, the expansion stops and the parent node is marked as a win. If no winning moves are found, then threats that must be blocked are looked for. If the opponent has exactly one immediate threat, it must be blocked so all other moves are discarded, and the simulation is continued, expanding that move's children. If the opponent has two immediate threats, only one could be blocked, and so the expansion is stopped and the parent is marked as a loss.
 
 Lorentz showed a board position, shown here in Figure \ref{fig:lorentzproof}, which his program, wanderer, solves in 45 minutes. Castro, using RAVE and backups, but none of the techniques shown after this solves it in under a minute.
 
@@ -136,7 +137,7 @@ Figure \ref{fig:proofbackups} shows the performance penalty from disabling proof
 
 Profiling was used to determine where Castro spends its time. Table \ref{tab:phasetime} shows how time is used given 10 seconds to play on an empty board. When using UCT without RAVE, the biggest chunk of time is spent in rollouts, followed by descent, and with expansion and back-propagation taking small amounts of time. When using RAVE without exploration, descent takes the most time, with back propagation and rollouts taking most of the rest. Compared to using UCT, RAVE spends less time in rollouts, and more time in descent and back-propagation. To alleviate this, multiple rollouts per iteration was tested. This would lower the number of full iterations, but increase the number of rollouts. Given that rollouts approximate the value of a given node, this should increase the accuracy, and hopefully the playing strength.
 
-\begin{figure}
+\begin{table}
 	\centering
 	\begin{tabular}{l|rrrrr}
 		             & Iterations & Descent & Expansion & Rollout & Back-propagation \\ \hline
@@ -147,9 +148,9 @@ Profiling was used to determine where Castro spends its time. Table \ref{tab:pha
 	\end{tabular}
 	\caption{Time used by MCTS phase with UCT and RAVE out of 10 seconds}
 	\label{tab:phasetime}
-\end{figure}
+\end{table}
 
-The experience and rave experience from the rollouts are aggregated before the back-propagation phase so only a single update to the rave and experience values in the tree is needed. Figure \ref{fig:multirollouts} shows the results when doing multiple rollouts per simulation, given the same amount of time. Multiple rollouts only has a small benefit on size 4, but is worth 50-100 elo on sizes 5 and up. 2 rollouts has a mean winning rate of 55\%, while 15 rollouts has a mean winning rate of 63\%. For comparison, Tables \ref{tab:phasetime2} and \ref{tab:phasetime10} show the time used for 2 rollouts per iteration and 10 rollouts per iteration respectively. Doing 2 rollouts per iteration drops the number of iterations to two thirds, and doing 10 iterations drops it to a fifth to a third as many rollouts. This is a big drop in iterations, but the total number of rollouts increased more than enough to compensate. This has the added benefit of building a smaller, more accurate tree, reducing memory usage.
+The experience and RAVE experience from the rollouts are aggregated before the back-propagation phase so only a single update to the RAVE and experience values in the tree is needed. Figure \ref{fig:multirollouts} shows the results when doing multiple rollouts per simulation, given the same amount of time. Multiple rollouts only has a small benefit on size 4, but is worth 50-100 elo on sizes 5 and up. Two rollouts has a mean winning rate of 55\%, while 15 rollouts has a mean winning rate of 63\%. For comparison, Tables \ref{tab:phasetime2} and \ref{tab:phasetime10} show the time used for two rollouts per iteration and 10 rollouts per iteration respectively. Doing 2 rollouts per iteration drops the number of iterations to two thirds, and doing 10 iterations drops it to a fifth to a third as many rollouts. This is a big drop in iterations, but the total number of rollouts increased more than enough to compensate. This has the added benefit of building a smaller, more accurate tree, reducing memory usage.
 
 \begin{figure}
 	\centering
@@ -181,7 +182,7 @@ The experience and rave experience from the rollouts are aggregated before the b
 	\label{fig:multirollouts}
 \end{figure}
 
-\begin{figure}
+\begin{table}
 	\centering
 	\begin{tabular}{l|rrrrr}
 		             & Iterations & Descent & Expansion & Rollout & Back-propagation \\ \hline
@@ -192,9 +193,9 @@ The experience and rave experience from the rollouts are aggregated before the b
 	\end{tabular}
 	\caption{Time used by MCTS phase with UCT and RAVE out of 10 seconds using 2 rollouts per iteration}
 	\label{tab:phasetime2}
-\end{figure}
+\end{table}
 
-\begin{figure}
+\begin{table}
 	\centering
 	\begin{tabular}{l|rrrrr}
 		             & Iterations & Descent & Expansion & Rollout & Back-propagation \\ \hline
@@ -205,7 +206,7 @@ The experience and rave experience from the rollouts are aggregated before the b
 	\end{tabular}
 	\caption{Time used by MCTS phase with UCT and RAVE out of 10 seconds using 10 rollouts per iteration}
 	\label{tab:phasetime10}
-\end{figure}
+\end{table}
 
 
 \section{Heuristic Knowledge}
@@ -319,7 +320,7 @@ Next we tested giving a bonus for playing near stones of your own colour as this
 
 \subsection{Local Reply}
 
-Playing well in Havannah often means making defensive moves, replying to the opponents last move. A bonus is given based on the distance to the opponents last move. Direct neighbours get a bonus of 3, moves two away get a bonus of 2, and moves three away get a bonus of 1.
+Playing well in Havannah often means making defensive moves, replying to the opponent's last move. A bonus is given based on the distance to the opponent's last move. Direct neighbours get a bonus of 3, moves two away get a bonus of 2, and moves three away get a bonus of 1.
 
 The results are shown in Figure \ref{fig:localreply}, showing this heuristic to be not very helpful.
 
@@ -344,7 +345,7 @@ The results are shown in Figure \ref{fig:localreply}, showing this heuristic to 
 %\addplot coordinates { (4,19.55) (5,27.31) (6,33.33) (7,30.80) (8,19.24) (9,25.69) (10,23.92) }; \addlegendentry{50}
 \end{axis}
 \end{tikzpicture}
-	\caption{Bonus for playing near the opponents last move against baseline RAVE player}
+	\caption{Bonus for playing near the opponent's last move against baseline RAVE player}
 	\label{fig:localreply}
 \end{figure}
 
@@ -419,7 +420,7 @@ The results are shown in Figure \ref{fig:groupsize}. A winning rate over 60\% ca
 
 \subsection{Distance to Win}\label{sec:distwin}
 
-Most havannah games end in either a bridge or a fork victory. It is possible to approximate the minimum number of moves needed to achieve these win conditions by doing a flood fill from each corner and edge, and counting the distance to each cell from the starting point. The distance between two cells that are part of the same group is counted as zero, since no additional stones are needed to connect them. The distance between any other neighbouring cells is one. Once the distances to each corner and edge are computed, the number of moves needed to achieve a victory from that cell is the sum of the shortest 2 distances to corners or the sum of the shortest 3 distances to edges. This method does not consider ring victories at all. It can over-estimate the number of moves since it doesn't consider that the paths to the corners or edges may share part of the path. It does not consider any moves by the opponent, which could easily increase the distance by blocking an essential move, or even make the connection impossible. It does not take virtual connections into account. All that said, it is a reasonable estimate in many cases. It is slow to compute, as it requires 12 flood fills for each player, but in doing so computes the minimum distance for every cell on the board. An example is shown in Figure \ref{fig:distances}, showing the minimum distances for white, black, and the minimum of the two. Note how the immediate threat has a distance of 1. White has low distances on the right where it dominates, while black has low distances on the left where it dominates.
+Most Havannah games end in either a bridge or a fork victory. It is possible to approximate the minimum number of moves needed to achieve these win conditions by doing a flood fill from each corner and edge, and counting the distance to each cell from the starting point. The distance between two cells that are part of the same group is counted as zero, since no additional stones are needed to connect them. The distance between any other neighbouring cells is one. Once the distances to each corner and edge are computed, the number of moves needed to achieve a victory from that cell is the sum of the shortest two distances to corners or the sum of the shortest three distances to edges. This method does not consider ring victories at all. It can over-estimate the number of moves since it doesn't consider that the paths to the corners or edges may share part of the path. It does not consider any moves by the opponent, which could easily increase the distance by blocking an essential move, or even make the connection impossible. It does not take virtual connections into account. All that said, it is a reasonable estimate in many cases. It is slow to compute, as it requires 12 flood fills for each player, but in doing so computes the minimum distance for every cell on the board. An example is shown in Figure \ref{fig:distances}, showing the minimum distances for white, black, and the minimum of the two. Note how the immediate threat has a distance of 1. White has low distances on the right where it dominates, while black has low distances on the left where it dominates.
 
 \begin{figure}
 	\centering
@@ -492,7 +493,7 @@ We first tested using the minimum of the distances for the two players, as in Fi
 \end{figure}
 
 
-We also tested using only the distance for the current player as in Figures \ref{fig:distwhite} and \ref{fig:distblack}. This is a much more offensive metric, ignoring the opponents distance to win. The results are shown in Figure \ref{fig:distancesides}. This method achieves especially good results on small boards, but positive results up to size 9.
+We also tested using only the distance for the current player as in Figures \ref{fig:distwhite} and \ref{fig:distblack}. This is a much more offensive metric, ignoring the opponent's distance to win. The results are shown in Figure \ref{fig:distancesides}. This method achieves especially good results on small boards, but positive results up to size 9.
 
 \begin{figure}
 	\centering
@@ -528,11 +529,11 @@ The other main way to improve MCTS is by improving the move choice in rollouts t
 
 \subsection{Mate-in-one}
 
-If the opportunity to win with a single move (mate-in-one) exists in a random game, a smart player would make that move. Similarly, if the opponent has threat to win in a single move, a smart player would block that move. Lorentz tested mate-in-one checks, and the defensive variant to great success. Fossel also tested mate-in-one checks achieving a 59\% win rate on size 5 with equal time\cite{fossel2010monte}. Because checking for win conditions is a slow operation, both Lorentz and Fossel achieved the greatest success when limiting the checks to only the first few moves of the rollout, where they are most representative of the true board state.
+If the opportunity to win with a single move (mate-in-one) exists in a random game, a smart player would make that move. Similarly, if the opponent has a threat to win in a single move, a smart player would block that move. Lorentz tested mate-in-one checks, and the defensive variant, to great success. Fossel also tested mate-in-one checks achieving a 59\% win rate on size 5 with equal time\cite{fossel2010monte}. Because checking for win conditions is a slow operation, both Lorentz and Fossel achieved the greatest success when limiting the checks to only the first few moves of the rollout, where they are most representative of the true board state.
 
 Mate-in-one checks are very slow. The obvious way of implementing it is to check every empty cell for each player for whether a move there would complete a win condition. This is $O(n)$ of the number of cells, which makes rollouts $O(n^2)$. A simple optimization is to only do the win check if that cell is next to an existing stone, but this is still $O(n)$. A much better algorithm is to only do win checks on the empty cells next to the group that was last played, which is roughly $O(g)$ where $g$ is the group size and $g \ll n$. This works because we are making the assertion that no mate-in-one moves exists before the last move, and so a new mate-in-one must be related to the last played stone. If the last played stone creates one new winning cell, we must block it. If it creates two new winning cells, it has a guaranteed win, and so we just end the rollout early. Castro does not have a facility to enumerate the empty cells surrounding a group, so instead it does a walk around the group. There must be a position around the cell that is not part the same group, even if it is off the board. If this was not true, then it would be in the center of a ring, and the game would already be finished. It then follows the edge of the group, checking only whether placing an additional stone in the neighbouring empty cells would turn that group into a winning structure. The walk ends when it gets back to the first position searched. An additional untested optimization would be to only do this check if the last placed stone has a connection to an edge or corner, though this ignores ring threats.
 
-We tested checking for mate-in-one moves after every move, and limiting to the first moves equal to the board size and double the board size. The results are shown in Figure \ref{fig:mateinone}. The best result is achieved exactly where Lorentz and Fossel reported their success, on size 5, but all other cases were inconclusive or quite negative. Discussions with other havannah programmers suggested mate-in-one checks become more important as the time per move is increased, so size and size*2 were tested with 30 seconds per move, with the results shown in Figure \ref{fig:mateinone30}. The results are more promising, but do have bigger confidence intervals due to the time consuming process of testing such long games.
+We tested checking for mate-in-one moves after every move, and limiting the checks to only to the first N moves with N equal to the board size and double the board size. The results are shown in Figure \ref{fig:mateinone}. The best result is achieved exactly where Lorentz and Fossel reported their success, on size 5, but all other cases were inconclusive or quite negative. Discussions with other Havannah programmers suggested mate-in-one checks become more important as the time per move is increased, so size and size*2 were tested with 30 seconds per move, with the results shown in Figure \ref{fig:mateinone30}. The results are more promising, but do have bigger confidence intervals due to the time consuming process of testing such long games.
 
 \begin{figure}
 	\centering
@@ -554,7 +555,7 @@ We tested checking for mate-in-one moves after every move, and limiting to the f
 \addplot coordinates { (4,20.00) (5,37.96) (6,32.49) (7,37.41) (8,42.48) (9,33.13) (10,23.49) }; \addlegendentry{all}
 \end{axis}
 \end{tikzpicture}
-	\caption{Bonus based on distance to win against baseline RAVE player with 5 seconds per move}
+	\caption{Mate-in-one checking against baseline RAVE player with 5 seconds per move}
 	\label{fig:mateinone}
 \end{figure}
 
@@ -577,7 +578,7 @@ We tested checking for mate-in-one moves after every move, and limiting to the f
 \addplot coordinates { (4,19.72) (5,52.56) (6,45.55) (7,62.08) (8,43.22) (9,61.09) (10,42.86) }; \addlegendentry{size*2}
 \end{axis}
 \end{tikzpicture}
-	\caption{Bonus based on distance to win against baseline RAVE player with 30 seconds per move}
+	\caption{Mate-in-one checking against baseline RAVE player with 30 seconds per move}
 	\label{fig:mateinone30}
 \end{figure}
 
@@ -610,7 +611,7 @@ Looking for this pattern is extremely fast, causing no slowdown in terms of simu
 
 Last Good Reply (LGR) is a game independent method of improving the moves in a rollout by taking advantage of local situations. It attempts to reuse good moves in later rollouts by saving all the replies by the winning player and forcing the reply in later simulations if the reply is valid.
 
-LGR only saves the replies to individual moves. If a good reply is known to the opponents last move, it is made instead of a random move. If that move is invalid, such as if there is already a stone in that cell, a random move is made instead.
+LGR only saves the replies to individual moves. If a good reply is known to the opponent's last move, it is made instead of a random move. If that move is invalid, such as if there is already a stone in that cell, a random move is made instead.
 
 If a reply was played, but the outcome of the rollout is a loss, that may not be such a good move, and so it should be forgotten. This variant, called Last Good Reply with Forgetting (LGRF) removes the replies for all the moves made by the losing player. This increases the amount of randomness in the rollouts as compared to LGR.
 
@@ -637,11 +638,11 @@ Figure \ref{fig:lgr} shows the results. LGR only works on size 4, while LGRF is 
 \end{figure}
 
 
-\subsection{Ring rule variations}\label{sec:ringrules}
+\subsection{Ring Rule Variations}\label{sec:ringrules}
 
 The three win conditions happen at different frequencies on different board sizes, as shown in Table \ref{tab:wintypes}. On size 4, a bridge is the most frequent win type followed by fork and the relatively infrequent ring victory. As the board size increases, it becomes harder for bridges and forks to form as they scale with the size of the board, but rings become relatively easier, because their size is independent of the board size and a local effect. Given empty space on the board, a ring is likely to occur purely by making random moves. Rings are quite easy to block however, so while they happen frequently in random games, they are rare in real games. MCTS is very sensitive to the outcome of rollouts not being representative of the strength of the starting position, so this mismatch is a problem.
 
-\begin{figure}
+\begin{table}
 	\centering
 	\begin{tabular}{l|rrr}
 		Size & Fork & Bridge & Ring \\ \hline
@@ -655,7 +656,7 @@ The three win conditions happen at different frequencies on different board size
 	\end{tabular}
 	\caption{Number of wins of each type by board size given 10000 simulations}
 	\label{tab:wintypes}
-\end{figure}
+\end{table}
 
 We explored 4 different solutions to this problem. Instead of modifying where stones are placed, we modify the rules of the game. If a ring is formed, but our modified rules deem it to be a product of randomness instead of the product of good strategy, it is simply ignored and the rollout continues until a different winning condition occurs. Note that this only affects rings formed during rollouts. If the tree reaches a position with a ring, it is still considered a win regardless of the rule modifications considered here.
 
@@ -663,7 +664,7 @@ We explored 4 different solutions to this problem. Instead of modifying where st
 
 The simplest rule modification is to simply ignore all occurrences of rings during some fraction of the rollouts. At the beginning of the rollout a random number is generated and if it's below the configurable fraction, rings are checked, otherwise all rings are ignored.
 
-The results are shown in Figure \ref{fig:ringignore}. There are minor successes on smaller boards, but bad results on bigger boards where rings are a problem. The bad results happen because it completely misses the opponents real and faster ring threats, instead focusing on its own slower bridge and fork victories. By the time it notices the opponents rings, it is too late to block them.
+The results are shown in Figure \ref{fig:ringignore}. There are minor successes on smaller boards, but bad results on bigger boards where rings are a problem. The bad results happen because it completely misses the opponent's real and faster ring threats, instead focusing on its own slower bridge and fork victories. By the time it notices the opponent's rings, it is too late to block them. This effect may be less pronounced against human opponents that are less likely to make ring threats, but it would introduce a new weakness that could be exploited.
 
 \begin{figure}
 	\centering
@@ -692,11 +693,11 @@ The results are shown in Figure \ref{fig:ringignore}. There are minor successes 
 
 \subsubsection{Fixed depth}
 
-Figure \ref{tab:wintypedepth} shows the number of moves before each win condition is achieved, showing that rings occur the earliest, especially on big boards. This is expected due to their smaller size and being local properites. If instead of ignoring all rings, we allow rings for the first part of the rollout and ignore all rings after that cutoff, we may allow legitimate ring threats while ignoring rings that occur purely due to randomness. As the board size increases, this depth should also be increased, so instead of an absolute value, we use a fraction of the number of empty cells on the board.
+Table \ref{tab:wintypedepth} shows the number of moves before each win condition is achieved, showing that rings occur the earliest, especially on big boards. This is expected due to their smaller size and being local properites. If instead of ignoring all rings, we allow rings for the first part of the rollout and ignore all rings after that cutoff, we may allow legitimate ring threats while ignoring rings that occur purely due to randomness. As the board size increases, this depth should also be increased, so instead of an absolute value, we use a fraction of the number of empty cells on the board.
 
 The results are shown in Figure \ref{fig:ringdepth}, showing results as high as a 71\% winning rate for only considering rings until 70\% of the empty cells are played. The benefits on board sizes 8, 9 and 10 are still quite small though, where the problem is the worst.
 
-\begin{figure}
+\begin{table}
 	\centering
 	\begin{tabular}{l|rrr}
 		Size & Fork   & Bridge &   Ring \\ \hline
@@ -710,7 +711,7 @@ The results are shown in Figure \ref{fig:ringdepth}, showing results as high as 
 	\end{tabular}
 	\caption{Average number of moves in a rollout before this victory type}
 	\label{tab:wintypedepth}
-\end{figure}
+\end{table}
 
 \begin{figure}
 	\centering
@@ -743,7 +744,7 @@ The results are shown in Figure \ref{fig:ringdepth}, showing results as high as 
 
 \subsubsection{Ring size}
 
-The most common rings are the simple size 6 ring, which are very easy to block. We may want to allow larger rings while still ignoring the easy to block 6 ring. Using the search-based ring check described in Section \ref{sec:ringimple}, we can ignore rings smaller than a minimum value. In this test we start by allowing all rings, and after every N moves, we increase the minimum size by 1 for variable N. After the first N this would imply only rings of size 7 or bigger, then 8 or bigger, etc. Here we set N as a fraction of the remaining empty cells.
+The most common rings are the simple size 6 ring, which are very easy to block. We may want to allow larger rings while still ignoring the easy to block 6 ring. Using the search-based ring check described in Section \ref{sec:ringimpl}, we can ignore rings smaller than a minimum value. In this test we start by allowing all rings, and after every N moves, we increase the minimum size by 1 for variable N. After the first N this would imply only rings of size 7 or bigger, then 8 or bigger, etc. Here we set N as a fraction of the remaining empty cells.
 
 The results are shown in Figure \ref{fig:ringsize}, again showing reasonable results on board sizes 5 and 6 with a winning rate of 60\%, but failing to show any improvement on larger board sizes. A fraction of 0.7 or 0.9 is so high that it never reaches a minimum size bigger than 7, though this is enough to ignore size 6 rings.
 
@@ -779,7 +780,7 @@ The results are shown in Figure \ref{fig:ringsize}, again showing reasonable res
 
 \subsubsection{Permanent stones}
 
-If the problem is that random moves form rings in empty parts of the board, another solution may be to only considers ring that include stones that exist on the board before the rollout begins. Thus ring threats may be formed from existing stones, but not purely out of randomness with little relation to the stones already existing on the board. In this test, stones that exist before the rollout begins are marked as permanent stones, and any ring found during the rollout must have a minimum number of permanent stones to be considered a winning formation. We tested requiring between 1 and 5 permanent stones, with the results shown in Figure \ref{fig:ringperm}. This shows a 50-100 elo gain on all board sizes. In human play it makes reasonable ring threats, but is no longer fixated on rings.
+If the problem is that random moves form rings in empty parts of the board, another solution may be to only consider rings that include stones that exist on the board before the rollout begins. Thus ring threats may be formed from existing stones, but not purely out of randomness with little relation to the stones already existing on the board. In this test, stones that exist before the rollout begins are marked as permanent stones, and any ring found during the rollout must have a minimum number of permanent stones to be considered a winning formation. We tested requiring between 1 and 5 permanent stones, with the results shown in Figure \ref{fig:ringperm}. This shows a 50-100 elo gain on all board sizes. In human play it makes reasonable ring threats, but is no longer fixated on rings.
 
 \begin{figure}
 	\centering
@@ -803,6 +804,9 @@ If the problem is that random moves form rings in empty parts of the board, anot
 	\caption{Ring rule permanent stones against baseline RAVE player}
 	\label{fig:ringperm}
 \end{figure}
+
+
+\section{Combinations}
 
 
 \section{Other}
