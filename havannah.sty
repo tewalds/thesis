@@ -5,11 +5,11 @@
 %% The original source files were:
 %%
 %% havannah.dtx  (with options: `package')
-%% 
+%%
 %% LaTeX package for Havannah diagrams
-%% 
+%%
 %% Copyright (C) 2010 Marcin Ciura
-%% 
+%%
 \NeedsTeXFormat{LaTeX2e}
 \ProvidesPackage{havannah}[2010/06/06 LaTeX havannah package]
 \RequirePackage{tikz}
@@ -37,6 +37,9 @@
 \newcommand\HTransparentStone{\node[
   circle,draw=black,inner sep=0.6pt,
   minimum size=\HStoneDiameter]}
+\newcommand\HBlackDot{\node[
+  circle,draw=black,inner sep=0.6pt,fill=black,text=white,
+  minimum size=\HStoneDiameter/5]}
 \newcommand\HBeforeOddMove{}
 \newcommand\HBeforeEvenMove{}
 \newcommand\HBeforeStone{}
@@ -114,6 +117,7 @@
   color/light gray/.code={\def\h@player{\HLightGrayStone}},
   color/gray/.code={\def\h@player{\HGrayStone}},
   color/dark gray/.code={\def\h@player{\HDarkGrayStone}},
+  color/black dot/.code={\def\h@player{\HBlackDot}},
   label/.store in=\h@label,
   relative stone size/.store in=\h@relative@stone@size,
   relative stone size=0.75,
@@ -375,3 +379,4 @@
 \endinput
 %%
 %% End of file `havannah.sty'.
+

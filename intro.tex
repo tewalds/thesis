@@ -1,4 +1,39 @@
 % vim: set wrap
 
 
+\section{Motivation}
+
+Artificial intelligence (AI) is an important and exciting field of research with the potential to fundamentally improve the way society functions. One of the earliest and more well-known subfields of AI research is games and puzzles. It was once commonly thought that once a computer could play Chess at world champion level, it would be on par with human intelligence. Deep Blue, the Chess program created by IBM accomplished world champion level play in 1997, using brute force search. While Chess-playing ability turned out to not be representative of general intelligence, the search techniques pioneered in Chess and similar games are undoubtedly effective at problem solving and will be a component of general artificial intelligence in the future. For AI researchers, the next goal after playing better than humans is to solve the game, in essence to play optimally. Several games, such as Connect 4 and Checkers have been solved, ensuring that a computer player cannot be defeated. Those who aren't working on optimal play are working on harder games than Chess. They are discovering new algorithms and heuristics that  continually push the bounds of what computers can do.
+
+Havannah is a board game invented in 1979 by Christian Freeling. The rules and properties of Havannah are described in detail in Chapter \ref{havannah}. While it is not a popular game, it is interesting from a game research perspective. It is a two player, zero-sum, perfect information game, like Chess, Go and Hex, and like Hex, it is a connection game. Unlike Chess, and like Go, however, it has no known strong heuristic, making the classical techniques ineffective. Christian Freeling is so confident that computers cannot play Havannah well that in 2002 he placed a \euro 1000 wager that no program could beat him in even one out of ten games on size 10 by 2012. These challenges makes it a good game for developing newer game playing techniques like Monte Carlo Tree Search (MCTS).
+
+The goal of this thesis is to develop a program that plays strong Havannah on board sizes 4 through 10, and to use this player to solve all 6 openings of the size 4 board.
+
+
+%- AI is interesting and worthwhile
+%- Havannah is representative of AI
+%- Optimal play is preferred to merely good/great play
+
+\section{Contributions}
+
+Havannah is closely related to Hex, a similar game that has received significantly more attention over the years. Hex has several mathematical properties that allow a program to ignore certain moves, or to prove the outcome of a game many moves before the end of the game. Several of these properties are shown in Section \ref{sec:properties} to not apply in Havannah, or to apply only in a limited sense. Unlike Hex, draws are possible in Havannah, and detecting these early are key to solving certain positions. A technique for detecting draws once no wins are possible is presented in Section \ref{sec:drawdetect}.
+
+All of the algorithms and ideas presented here were implemented in a program named Castro. Castro has been released as open source at \url{https://github.com/tewalds/castro}, and is written in C++. Most of the testing was done using ParamLog, a distributed testing framework written for testing Castro. It has also been released as open source at \url{https://github.com/tewalds/ParamLog}.
+
+With ParamLog, testing a large number of features becomes easy, so all the algorithms and heuristics were tested with multiple values on board sizes 4-10. This is a departure from previous work on Havannah which generally focused only on a single or a few board sizes.
+
+Several knowledge heuristics were tested in Section \ref{sec:knowledge}, including maintaining virtual connections, local reply, locality, edge connectivity, group size and distance to win.
+
+Havannah's three winning conditions interact with MCTS in unusual ways, so four novel ring rule variations are introduced and tested in Section \ref{sec:ringrules}.
+
+Testing the many knowledge heuristics and rollout policy features shows that a greater than 80\% winning rate against an already fairly strong baseline can be achieved on all board sizes greater than size 4.
+
+While proof backups have been used in MCTS before, they are shown to be particularly effective in a Havannah player in Section \ref{sec:proofbackups} when combined with a two-ply look-ahead. Chapter \ref{solving} builds on this work and adds threading, draw detection and memory management to solve size 4. The solution to size 4 Havannah is presented in Section \ref{sec:size4proof}.
+
+%- Castro, open source Havannah implementation
+%  - tested existing heuristics on larger board sizes
+%  - distance to win
+%  - ring rule variations
+%  - strong solver
+%- solution to size 4, proof trees
 

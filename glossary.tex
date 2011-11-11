@@ -22,6 +22,7 @@ Here are general game playing concepts and definitions:
 \item[Move] A move is a distinct action by one of the players leading from one state to another state. In games with multi-part moves, such as Amazons where each move consists of a movement plus shooting an arrow, the pair of actions would be considered a single move. There are usually multiple moves available from each state, but usually only one can be chosen per turn.
 \item[Node Value] Each node has an associated outcome or expected outcome associated with it. Terminal positions are positions where one of the players has won or it is a draw, have an exact value such as win, loss or draw, or a score to show how much a player won by.
 \item[Perfect Information] A game has the property of perfect information when both players know the full state of the game.
+\item[Ply] A move or turn. A search depth of 4-ply means looking at all possible paths that are 4 moves deep.
 \item[Ponder] Thinking during your opponent's time.
 \item[Root Node] The root node is the highest node in the tree. It has no parents, and there is exactly one of them in any tree.
 \item[State] A state is a full description of a board position. It includes the locations of all the pieces, and any other relevant information. In Chess, the state would include whether each king can castle, and whether a pawn can capture \textit{en passant}. In games where repeated moves are not allowed, the full game history may be included in the state. Occasionally a simplified version of the state is used when speed is more important than accuracy.

@@ -38,12 +38,12 @@ The author reserves all other publication and other rights in association with t
 
 
   % Dedication
-   \newpage
-  \pdfbookmark[1]{Dedication}{dedication}
-  \chapter*{}
-  \thispagestyle{empty}
-  This thesis is dedicated to\\
-  A person or persons or perhaps some abstract concept.
+%   \newpage
+%  \pdfbookmark[1]{Dedication}{dedication}
+%  \chapter*{}
+%  \thispagestyle{empty}
+%  This thesis is dedicated to\\
+%  A person or persons or perhaps some abstract concept.
 
   % Abstract
   \newpage
@@ -53,13 +53,15 @@ The author reserves all other publication and other rights in association with t
   \vspace*{-0.7in}
   \renewcommand{\baselinestretch}{1.8}
   \normalsize{
-  This is the abstract text. It MUST be double spaced. Don't forget that. Duis non sapien quis justo sagittis tempor id id odio. In varius porta sollicitudin. Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse sodales sagittis ante, id ultrices ipsum sollicitudin quis. Ut fermentum ornare neque eu sollicitudin. Quisque neque massa, facilisis id congue ac, blandit vitae nulla. Donec vulputate scelerisque lorem quis tincidunt.
+
+Havannah is a recent game that is interesting from an AI research perspective. Some of its properties, including virtual connections, frames, dead cells and draws are explained. Monte Carlo Tree Search (MCTS) is well suited to play Havannah, but the playing strength can be improved by using heuristic knowledge and a modified rollout policy. A change to the rules in the rollout policy significantly improves play. Combined with several Havannah specific heuristics, a greater than 80\% winning rate, or 300 elo gain, is achieved on all board sizes over an already fairly strong player. This MCTS player is augmented with a few engineering improvements and then used to solve all 6 openings of size 4 Havannah, a game with a state space on the order of $6 \times 10^{15}$ states. Castro, the implementation and test bed, is released open source.
+
   } \vspace*{-0.2in} \\
 
   % A second paragraph if you need it
-  \normalsize{
-  This is a second abstract paragraph. if you need it. Nullam rutrum elit in magna porta vehicula id non elit. Nam varius ultricies lectus ac consequat. Duis tellus ligula, convallis ac pretium et, dignissim at enim. Cras turpis lorem, eleifend at imperdiet et, sollicitudin id ante. Nam blandit volutpat nisl, nec congue mi feugiat sed. Nunc accumsan, urna a elementum viverra, elit purus iaculis urna, vel vehicula est risus quis turpis. Ut laoreet scelerisque elit, a rhoncus nibh placerat in. Nulla feugiat ullamcorper justo quis adipiscing. Etiam dolor arcu, porta et dictum vitae, dictum eget dui.
-  }
+%  \normalsize{
+%  This is a second abstract paragraph. if you need it.
+%  }
   \renewcommand{\baselinestretch}{1.33}
 
   % Preface
@@ -68,7 +70,6 @@ The author reserves all other publication and other rights in association with t
   \chapter*{Preface}
   \thispagestyle{empty}
   \vspace*{-0.7in}
-
 
 I've never been very good or interested in playing board games, but I've always had a fascination with how to play them well. I started programming when I was 13 years old, and one of my first projects was to write an AI for tic-tac-toe. This is rather easy, as the game is tiny, but it was a good project for teaching me to program. A few years later I was introduced to mancala, and as a way to understand the game better, I decided to write a program to play it, and in the process, independently reinvented minimax and rediscovered that many games are zero-sum. My mancala program never got to be any good as I didn't know anything about alpha-beta and wikipedia hadn't been invented yet, but I have always had a greater interest in understanding how the mechanics of the game work than actually playing the game. Writing a strong program is a great challenge, and a very satisfying one if your program becomes a stronger player than you are yourself.
 
@@ -87,8 +88,16 @@ This thesis is the story of what it takes to write a strong Havannah player, and
    \thispagestyle{empty}
    \vspace*{-0.7in}
    \small{
-  I thank so-and-so, as well as whatshisname. They were awesome.
-%Marcin Ciura for havannah.sty
-%Colin Ophus for the playing so many games, for thesis template and advice
-  }
+
+I'd especially like to thank Colin Ophus, for playing so many games of Pentago and Havannah with me, and trying to deconstruct the games. His insights and enthusiasm helped me stay motivated and continually improve Castro. Also, I appreciate the thesis template and thesis advice.
+
+Thank you Ryan Hayward, Martin Mueller and Jonathan Schaeffer, for your insights into game playing algorithms, how they apply to other games and possibly to Havannah, and for advising me on my thesis.
+
+Thank you Marcin Ciura for your havannah.sty which made the havannah diagrams easy, and the constant discussion of Havannah ideas.
+
+Thanks to my family and friends, for their constant support as I worked on my masters.
+
+Thank you Christian Freeling, for inventing such an interesting game.
+
+   }
 
