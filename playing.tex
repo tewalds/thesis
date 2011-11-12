@@ -4,21 +4,21 @@
 
 %Several papers have been written about playing Havannah before. Teytaud\cite{teytaud2010creating} showed that UCT and RAVE work well in Havannah. Fossel\cite{fossel2010monte} showed that RAVE works well and tested a few other features. He found that checking for a winning moves (mate-in-one moves) in the rollout improves the playouts and therefore the strength. Lorentz\cite{lorentz2011improving} also tested checking for mate-in-one moves as well as blocking those moves and found an improvement. He used a rollout policy to encourage playing near previous stones. He backed up proven positions within the tree, potentially solving the root board position. He also found success with progressive widening.
 
-These are early days for developing strong Havannah programs. The first published attempt at writing a program to play Havannah is a BSc thesis by Terry Rogers in 2004 \cite{rogers2004bsc}. In his thesis, he describes implementing several very weak strategies, easily beaten by even the most amateur human player. An alpha-beta player has been attempted, as shown by Johan de Koning's program PZN which competed in the 2010 ICGA Olympiad. It finished in last place because its heuristic function, which was quite similar to my distance to win heuristic shown in Section \ref{sec:distwin}, was both weak and completely blind to rings. The majority of attempts, and particularly published attempts, have been monte-carlo tree search based, primarily because MCTS does not need a heuristic evaluation function. This has also been influenced by MCTS's recent successes in the similar games of Go and Hex where MCTS has over taken the traditional techniques. Given this, MCTS is a good starting point for writing a Havannah player. This chapter will explore the performance of various search algorithms and enhancements as applied to Havannah using the Havannah program named Castro\footnote{https://github.com/tewalds/castro}.
+These are early days for developing strong Havannah programs. The first published attempt at writing a program to play Havannah is a BSc thesis by Terry Rogers in 2004 \cite{rogers2004bsc}. In his thesis, he describes implementing several weak strategies, easily beaten by even the most amateur human player. The only alpha-beta based Havannah program is Johan de Koning's program PZN, which competed in the 2010 ICGA Olympiad. It finished in last place because its heuristic function, which is quite similar to the distance to win heuristic shown in Section \ref{sec:distwin}, is blind to rings, virtual connections and most threats, and is too slow to for alpha-beta to reach sufficient depths for that to not matter. The majority of attempts, and particularly published attempts, have been Monte-Carlo Tree Search based, primarily because MCTS does not need a heuristic evaluation function. This has also been influenced by MCTS's recent successes in the similar games of Go and Hex where MCTS has overtaken traditional techniques. Given this, MCTS is a good starting point for writing a Havannah player. This chapter will explore the performance of various search algorithms and enhancements as applied to Havannah using the Havannah program named Castro.\footnote{https://github.com/tewalds/castro}
 
-UCT has strong guarantees about eventual optimality, so is the first baseline. After a few games, an exploration constant of 0.9 was chosen as a reasonable value to test against. RAVE has been shown by Teytaud to be superior, and this finding will be confirmed in Section \ref{sec:playingrave}. For all tests thereafter, a RAVE player will be used as the baseline player. The RAVE baseline has no UCT exploration, keeps the tree between moves, and does 2-ply node expansion backups. All data points are based on several hundred games played with 5 seconds per move unless otherwise stated.
+UCT has strong guarantees about eventual optimality, so is the first baseline. After a few games, an exploration constant of 0.9 was chosen as a reasonable value to test against. RAVE has been shown by Teytaud to be strong in Havannah\cite{teytaud2010creating}, and this finding will be confirmed in Section \ref{sec:playingrave}. For all tests thereafter, a RAVE player will be used as the baseline player. The RAVE baseline has no UCT exploration, keeps the tree between moves, and does 2-ply node expansion backups. Unless otherwise stated, all data points are based on several hundred games played with 5 seconds per move.
 
 
 \section{Testing Methodology}
 
-All testing was done using ParamLog\footnote{https://github.com/tewalds/ParamLog}, an open source distributed testing framework written for this project. Tests were run on board sizes 4 through 10 with 1, 2, 5 and 10 seconds per move. The times are standardized to a machine that can complete 500,000 simulations on size 4 with basic UCT in 11 seconds, which is approximately equal to a Core 2 Duo 2.4ghz. This has the added effect of keeping results comparable across machines and in the face of optimizations. Only the results from the tests with 5 seconds are shown, because this has been common amoung other published papers about Havannah, but also because most test cases are fairly consistent between different amounts of time.
+All testing was done using ParamLog,\footnote{https://github.com/tewalds/ParamLog} an open source distributed testing framework written for this project. Tests were run on board sizes 4 through 10 with 1, 2, 5 and 10 seconds per move. The times are standardized to a machine that can complete 500,000 simulations on size 4 with basic UCT in 11 seconds, which is approximately equal to a Core 2 Duo 2.4ghz. This has the added effect of keeping results comparable across machines and in the face of optimizations. Only the results from the tests with 5 seconds are shown, because this has been common among other published papers about Havannah, but also because most test cases are fairly consistent between different amounts of time.
 
 All tests are played relative to a baseline. The first baseline is UCT.
 
 
-\section{Rave}\label{sec:playingrave}
+\section{RAVE}\label{sec:playingrave}
 
-Rave was introduced in Section \ref{sec:rave} as a way to use the information from rollouts during future descents. Teytaud tested Rave in Havannah in 2010\cite{teytaud2010creating}, yielding a 100\% winrate against UCT with a small number of simulations. Here we used the rave formula \eqref{eqn:rave2}: $$ \beta = \frac{k}{k+n_i.n}$$ and test many values for $k$. Figure \ref{fig:ravegraph} shows the results. $k=500$ yields a greater than 80\% win rate on all board sizes, and so is chosen as the baseline for all future tests. This is equivalent to a 250 or more elo gain.
+RAVE was introduced in Section \ref{sec:rave} as a way to use the information from rollouts during future descents. Teytaud tested RAVE in Havannah in 2010\cite{teytaud2010creating}, yielding a 100\% winrate against UCT with a small number of simulations. Here we used the RAVE formula \eqref{eqn:rave2}: $$ \beta = \frac{k}{k+n_i.n}$$ and test many values for $k$. Figure \ref{fig:ravegraph} shows the results. $k=500$ yields a greater than 80\% win rate on all board sizes, and so is chosen as the baseline for all future tests. This is equivalent to a 250 or more elo gain.
 
 % To test that $k=500$ is a strong value, we tested different rave values against the rave baseline, with the results shown in Figure \ref{fig:raverave}.
 
@@ -41,7 +41,7 @@ Rave was introduced in Section \ref{sec:rave} as a way to use the information fr
 \addplot coordinates { (4,76.02) (5,91.42) (6,88.35) (7,81.55) (8,90.71) (9,98.54) (10,99.02) }; \addlegendentry{ 1000}
 \end{axis}
 \end{tikzpicture}
-	\caption{Rave vs UCT baseline}
+	\caption{Rave vs UCT Baseline}
 	\label{fig:ravegraph}
 \end{figure}
 
@@ -76,7 +76,7 @@ Rave was introduced in Section \ref{sec:rave} as a way to use the information fr
 
 \section{Keep Tree Between Moves}
 
-MCTS builds a large tree with real experience, and then makes a move. Most of the final move selection strategies will chose a large subtree usually consisting of more than 25\% of the effort that went into this move choice, but often consisting of as much as 95\% of the work. This is real experience that would be duplicated after the next move if it was thrown away. The opponent's move is unknown at this point, but is frequently the expected reply, again often maintaining 25\% or more of the tree. Keeping the remaining tree is a pure advantage with no downsides. Keeping the the tree has about a 53\% winning rate against throwing away the tree after each move. This is not a huge improvement, but is easy, free and works on all board sizes.
+MCTS builds a large tree with real experience, and then makes a move. Most of the final move selection strategies will choose a large subtree usually consisting of more than 25\% of the effort that went into this move choice, but often consisting of as much as 95\% of the work. This is real experience that would be duplicated after the next move if it was thrown away. The opponent's move is unknown at this point, but is frequently the expected reply, again often maintaining 25\% or more of the tree. Keeping the remaining tree is a pure advantage with no downsides. Keeping the the tree has about a 53\% winning rate against throwing away the tree after each move. This is not a huge improvement, but is easy, free and works on all board sizes.
 
 %\begin{figure}
 %\centering
@@ -107,7 +107,7 @@ MCTS builds a large tree with real experience, and then makes a move. Most of th
 	\HStoneGroup[color=white]{b1,a2}
 	\HStoneGroup[color=black]{d2,e4}
 	\end{HavannahBoard}
-	\caption{Early position solvable by MCTS in 1 minute}
+	\caption{Early Position Solvable by MCTS in 1 Minute, white to play}
 	\label{fig:lorentzproof}
 \end{figure}
 
@@ -130,25 +130,25 @@ MCTS builds a large tree with real experience, and then makes a move. Most of th
 %\addplot coordinates { (4,10.85) (5,27.61) (6,28.09) (7,18.90) (8,13.37) (9,15.01) (10,12.68) }; \addlegendentry{Disabled}
 \end{axis}
 \end{tikzpicture}
-	\caption{RAVE baseline with 2-ply lookahead during expansion vs 1-ply lookahead and no lookahead.}
+	\caption{RAVE Baseline with 2-ply lookahead during expansion vs 1-ply lookahead and no lookahead}
 	\label{fig:proofbackups}
 \end{figure}
 
-A game of Havannah ends when one of the winning conditions is met, and this can happen with only a few stones on the board or with the board full of stones. The game rarely finishes with only a few stones in practice, but frequently the tree includes positions where one player fails to respond correctly to a threat, leading the other player to win easily. MCTS is guided away from allowing these threats as the winning rate drops. By default it will continue trying this losing move as long as it looks better than the others, which could take quite a while. Late in the game, the game tree may be sufficiently small that the entire tree could be enumerated, but normal MCTS will take a long time to converge on the best move. If terminal nodes were marked, and winning moves were backed up as losing moves for their parents and sets of losing moves are backed up as winning moves for their parents, full proof trees could be constructed, allowing faster detection of threats, and proving the outcome of moves late in the game. This has been suggested before, and was explored by Lorentz in 2010 with moderate success \cite{lorentz2011improving}.
+A game of Havannah ends when one of the winning conditions is met. This can happen with only a few stones on the board or with the board full of stones. In practice, the game rarely finishes with only a few stones, but frequently the tree includes positions where one player fails to respond correctly to a threat, leading the other player to win easily. MCTS is guided away from allowing these threats as the winning rate drops. By default it will continue trying this losing move as long as it looks better than the others, which could take quite a while. Late in the game, the game tree may be sufficiently small that the entire tree could be enumerated, but normal MCTS will take a long time to converge on the best move. If terminal nodes are marked, and winning moves are backed up as losing moves for their parents and sets of losing moves are backed up as winning moves for their parents, full proof trees can be constructed, allowing faster detection of threats, and proving the outcome of moves late in the game. This has been suggested before, and was explored by Lorentz in 2010 with moderate success \cite{lorentz2011improving}.
 
 Terminal nodes are found in the expansion phase. If a winning move is found, the expansion stops and the parent node is marked as a win. If no winning moves are found, then threats that must be blocked are looked for. If the opponent has exactly one immediate threat, it must be blocked, so all other moves are discarded, and the simulation is continued, expanding that move's children. If the opponent has two or more immediate threats, only one could be blocked, and so the expansion is stopped and the parent is marked as a loss. These outcomes are then propagated as far up the tree as possible.
 
-Lorentz showed a board position, shown here in Figure \ref{fig:lorentzproof}, which his program, Wanderer, solves in 45 minutes. Castro, using RAVE and proof backups, but a purely random rollout policy and no heuristic knowledge, solves it in under a minute.
+Lorentz showed a board position, shown here in Figure \ref{fig:lorentzproof}, which his program, Wanderer, solves in 45 minutes. Using RAVE and proof backups but a purely random rollout policy and no heuristic knowledge, Castro solves it in under a minute.
 
-Figure \ref{fig:proofbackups} shows the from using proof backups. One ply means only checking for wins but not checking for the opponent's threats. Backing up proofs seems to be give a 75-90\% winning rate on all board sizes, which is worth about 100-300 elo. At the olympiad, Castro solved the outcome of the game about 15 moves before the end. Because it keeps the tree between moves, the remaining moves were played out of its precomputed proof tree.
+Figure \ref{fig:proofbackups} shows the results from using proof backups. It compares using 2-ply versus 1-ply and 0-ply lookahead. One ply means only checking for winning moves but not checking for the opponent's threats. Two ply means checking for winning moves and for the opponent's threats. Backing up proofs seems to be give a 75-90\% winning rate on all board sizes, which is worth about 100-300 elo. At the olympiad, Castro solved the outcome of the game about 15 moves before the end. Because it keeps the tree between moves, the remaining moves were played out of its precomputed proof tree.
 
 
 \section{Multiple Rollouts}
 
-Profiling was used to determine where Castro spends its time. Table \ref{tab:phasetime} shows how time is used given 10 seconds to play on an empty board, on board sizes 5 and 10. When using UCT without RAVE, the most of time is spent in rollouts, followed by descent. Expansion and back-propagation, by contrast, take a relatively small amounts of time. When using RAVE without exploration, descent takes the most time, with back propagation and rollouts taking most of the rest. Compared to using UCT, RAVE spends less time in rollouts, and more time in descent and back-propagation. While the optimal ratio of time is unknown, spending time evaluating nodes intuitively seems to be a better use of time than the book keeping associated with figuring out which nodes to evaluate. To alleviate this, multiple rollouts were run per simulation. This would lower the number of full simulations, but increase the number of rollouts. Given that rollouts are used to approximate the value of a given node, this should increase the accuracy of the experience in the tree, and hopefully the playing strength.
+Profiling was used to determine where Castro spends its time. Table \ref{tab:phasetime} shows how time is used given 10 seconds to play on an empty board, on board sizes 5 and 10. When using UCT without RAVE, the most of time is spent in rollouts, followed by descent. Expansion and back-propagation, by contrast, take a relatively small amount of time. When using RAVE without exploration, descent takes the most time, with back propagation and rollouts taking most of the rest. Compared to using UCT, RAVE spends less time in rollouts, and more time in descent and back-propagation. While the optimal ratio of time is unknown, spending time evaluating nodes intuitively seems to be a better use of time than the bookkeeping associated with figuring out which nodes to evaluate. To alleviate this, multiple rollouts were run per simulation. This would lower the number of full simulations, but increase the number of rollouts. Given that rollouts are used to approximate the value of a given node, this should increase the accuracy of the experience in the tree, and hopefully the playing strength.
 
 
-The experience and RAVE experience from the rollouts are aggregated before the back-propagation phase so only a single update is needed for the RAVE and experience values of each node in the tree. Figure \ref{fig:multirollouts} shows the results when doing multiple rollouts per simulation, given the same amount of time. Multiple rollouts only has a small benefit on size 4, but is worth 50-100 elo on sizes 5 and up. Two rollouts has a mean winning rate of 55\%, while 15 rollouts has a mean winning rate of 63\%. For comparison, Tables \ref{tab:phasetime2} and \ref{tab:phasetime10} show the time used for 2 rollouts per simulation and 10 rollouts per simulation respectively. Doing 2 rollouts per simulation drops the number of simulations to two thirds, and doing 10 rollouts per simulation drops it to a fifth to a third as many simulations. This is a big drop in simulations, but the total number of rollouts increased more than enough to compensate. This has the added benefit of building a smaller, more accurate tree, reducing memory usage.
+The experience from the rollouts are aggregated before the back-propagation phase so only a single update is needed for the RAVE and experience values of each node in the tree. Figure \ref{fig:multirollouts} shows the results when doing multiple rollouts per simulation, given the same amount of time. Multiple rollouts only has a small benefit on size 4, but is worth 50-100 elo on sizes 5 and up. Two rollouts has a mean winning rate of 55\%, while 15 rollouts has a mean winning rate of 63\%. For comparison, Tables \ref{tab:phasetime2} and \ref{tab:phasetime10} show the time used for 2 rollouts per simulation and 10 rollouts per simulation respectively. Doing 2 rollouts per simulation drops the number of simulations to two thirds, and doing 10 rollouts per simulation drops it to a fifth to a third as many simulations. This is a big drop in simulations, but the total number of rollouts increased more than enough to compensate. This has the added benefit of building a smaller, more accurate tree, reducing memory usage.
 
 \begin{figure}
 	\centering
@@ -176,7 +176,7 @@ The experience and RAVE experience from the rollouts are aggregated before the b
 %\addplot coordinates { (4,47.67) (5,64.08) (6,56.59) (7,53.61) (8,62.60) (9,67.85) (10,77.37) }; \addlegendentry{20}
 \end{axis}
 \end{tikzpicture}
-	\caption{Multiple rollouts per simulation against baseline RAVE player}
+	\caption[Multiple Rollouts]{Multiple Rollouts per Simulation Against Baseline RAVE Player}
 	\label{fig:multirollouts}
 \end{figure}
 
@@ -189,7 +189,7 @@ The experience and RAVE experience from the rollouts are aggregated before the b
 		RAVE size 5  & 148713 & 45.1\% &  7.3\% & 22.2\% & 25.4\% \\
 		RAVE size 10 &  41713 & 42.9\% &  4.8\% & 24.3\% & 28.0\% \\
 	\end{tabular}
-	\caption{Time used by MCTS phase with 1 rollout per iteration}
+	\caption{Time Used by MCTS Phase with 1 Rollout per Simulation}
 	\label{tab:phasetime}
 \end{table}
 
@@ -202,7 +202,7 @@ The experience and RAVE experience from the rollouts are aggregated before the b
 		RAVE size 5  & 115704 & 34.7\% & 6.0\% & 32.6\% & 26.6\% \\
 		RAVE size 10 &  31962 & 29.4\% & 4.0\% & 37.1\% & 29.6\% \\
 	\end{tabular}
-	\caption{Time used by MCTS phase using 2 rollouts per iteration}
+	\caption{Time Used by MCTS Phase Using 2 Rollouts per Simulation}
 	\label{tab:phasetime2}
 \end{table}
 
@@ -215,7 +215,7 @@ The experience and RAVE experience from the rollouts are aggregated before the b
 		RAVE size 5  & 49131 & 14.8\% & 3.4\% & 65.6\% & 16.2\% \\
 		RAVE size 10 & 12232 & 10.7\% & 1.9\% & 71.1\% & 16.3\% \\
 	\end{tabular}
-	\caption{Time used by MCTS phase using 10 rollouts per iteration}
+	\caption{Time Used by MCTS Phase Using 10 Rollouts per Simulation}
 	\label{tab:phasetime10}
 \end{table}
 
@@ -227,7 +227,7 @@ Heuristic knowledge was described in section \ref{sec:heuristicknowledge} as a w
 
 \subsection{Maintain Virtual Connections}
 
-Virtual connections (VC), as shown in Figure \ref{fig:simplevc} are a fast way of ensuring two groups can connect or that a group can connect to a remote part of the board. This is only true if they are maintained however. If the opponent places a piece in one of the two empty cells, a response of playing in the other cell is usually a good move. Thus, a bonus should be given to maintaining these virtual connections.
+Virtual connections (VC), as shown in Figure \ref{fig:simplevc}, are a fast way of ensuring two groups can connect or that a group can connect to a remote part of the board. However, this is only true if they are maintained. If the opponent places a piece in one of the two empty cells, a response of playing in the other cell is usually a good move. Thus, a bonus should be given to maintaining these virtual connections.
 
 Figure \ref{fig:maintainvc} shows the results of adding a knowledge bonus of 5, 10, 25, 50 or 100 for maintaining the VC. It seems to work very well on a few sizes with a winning rate as high as 70\%, but in general it does not have a big effect on the larger board sizes. This may be because RAVE inherently finds these moves fairly quickly anyway, or because it focuses more on rings on the larger board sizes, in which case VCs aren't very important.
 
@@ -250,7 +250,7 @@ Figure \ref{fig:maintainvc} shows the results of adding a knowledge bonus of 5, 
 \addplot coordinates { (4,67.34) (5,59.92) (6,45.20) (7,48.00) (8,44.87) (9,51.38) (10,51.00) }; \addlegendentry{100}
 \end{axis}
 \end{tikzpicture}
-	\caption{Maintain Virtual Connections against baseline RAVE player}
+	\caption[Maintain Virtual Connection Bonus]{Maintain Virtual Connection Bonus Against Baseline RAVE Player}
 	\label{fig:maintainvc}
 \end{figure}
 
@@ -270,7 +270,7 @@ Large parts of the board are often empty and far from any existing stone, and pl
 	\HStoneGroup[color=light gray,label=2]{c1,a3,d3,c4}
 	\HStoneGroup[color=light gray,label=1]{d2,d4,b4}
 	\end{HavannahBoard}
-	\caption{Points given by distance from an existing stone}
+	\caption{Points Given by Distance From an Existing Stone}
 	\label{fig:localitypoints}
 \end{figure}
 
@@ -297,7 +297,7 @@ First, giving a bonus to being near any stone regardless of colour was tested. T
 %\addplot coordinates { (4,1.21) (5,18.88) (6,26.98) (7,39.04) (8,31.53) (9,31.47) (10,35.46) }; \addlegendentry{50}
 \end{axis}
 \end{tikzpicture}
-	\caption{Locality bonus for playing near existing stones of any colour against baseline RAVE player}
+	\caption[Locality Bonus, Any Stones]{Locality Bonus for Playing Near Existing Stones of any Colour Against Baseline RAVE Player}
 	\label{fig:localityany}
 \end{figure}
 
@@ -324,7 +324,7 @@ Next, giving a bonus for playing near stones of your own colour was tested, as t
 %\addplot coordinates { (4,20.90) (5,53.53) (6,43.90) (7,45.20) (8,42.18) (9,47.95) (10,60.00) }; \addlegendentry{50}
 \end{axis}
 \end{tikzpicture}
-	\caption{Locality bonus for playing near stones of the same colour against baseline RAVE player}
+	\caption[Locality Bonus, Own Stones]{Locality Bonus for Playing Near Stones of the Same Colour Against Baseline RAVE Player}
 	\label{fig:localitysides}
 \end{figure}
 
@@ -351,7 +351,7 @@ Next, giving a bonus for playing near stones of your own colour was tested, as t
 %\addplot coordinates { (4,19.55) (5,27.31) (6,33.33) (7,30.80) (8,19.24) (9,25.69) (10,23.92) }; \addlegendentry{50}
 \end{axis}
 \end{tikzpicture}
-	\caption{Bonus for playing near the opponent's last move against baseline RAVE player}
+	\caption[Local Reply Bonus]{Local Reply Bonus for Playing Near the Opponent's Last Move Against Baseline RAVE Player}
 	\label{fig:localreply}
 \end{figure}
 
@@ -385,11 +385,11 @@ The results are shown in Figure \ref{fig:localreply}, showing this heuristic to 
 \addplot coordinates { (4,11.16) (5,52.72) (6,52.80) (7,49.20) (8,64.46) (9,62.70) (10,55.78) }; \addlegendentry{50}
 \end{axis}
 \end{tikzpicture}
-	\caption{Bonus for playing near groups that are connected to an edge or corner against baseline RAVE player}
+	\caption[Edge Connectivity Bonus]{Edge Connectivity Bonus for Playing Near Groups that are Connected to an Edge or Corner Against Baseline RAVE Player}
 	\label{fig:connectivity}
 \end{figure}
 
-Connecting to edges and corners is important for eventually winning the game, as most games end in a bridge or fork victory. Connecting to an edge is important, but extending groups that are already connected to an edge or corner is a good strategy for winning. The edges and corners that each group is connected to is already stored and updated for easy win detection. A bonus is given based on the number of edges or corners it is connected to. The maximum number of edges or corners a group could be connected to is 3, being 2 edges and 1 corner, so this gives a bonus between 0 and 3.
+Connecting to edges and corners is important for eventually winning the game, as most games end in a bridge or fork victory. Connecting to an edge is important, and extending groups that are already connected to an edge or corner is a good strategy for winning. The edges and corners that each group is connected to is already stored and updated for easy win detection. A bonus is given based on the number of edges or corners it is connected to. The maximum number of edges or corners a group could be connected to is 3, being 2 edges and 1 corner, so this gives a bonus between 0 and 3.
 
 Figure \ref{fig:connectivity} shows the results. While no single value is strong on all board sizes, some value is strong on each board size, giving a winning rate between 55\% and 65\%, or 50 to 100 elo.
 
@@ -421,7 +421,7 @@ Figure \ref{fig:connectivity} shows the results. While no single value is strong
 %\addplot coordinates { (4,13.02) (5,20.64) (6,21.43) (7,14.37) (8,18.54) (9,9.71) (10,10.61) }; \addlegendentry{200}
 \end{axis}
 \end{tikzpicture}
-	\caption{Bonus for playing near or forming big groups against baseline RAVE player}
+	\caption[Group Size Bonus]{Group Size Bonus for Playing Near or Forming Big Groups Against Baseline RAVE Player}
 	\label{fig:groupsize}
 \end{figure}
 
@@ -469,7 +469,7 @@ Most Havannah games end in either a bridge or a fork victory. It is possible to 
 		\HStoneGroup[color=light gray,label=4]{c3,c4,d4,d5,e5,f5}
 		\end{HavannahBoard}
 	}
-	\caption{Distance to a win for (a) white (b) black (c) minimum of white and black}
+	\caption{Distance to a Win for (a) White (b) Black (c) Minimum of White and Black}
 	\label{fig:distances}
 \end{figure}
 
@@ -502,7 +502,7 @@ First, using the minimum of the distances for the two players was tested, as in 
 %\addplot coordinates { (4,2.27) (5,10.77) (6,12.68) (7,5.75) (8,16.87) (9,23.29) (10,10.71) }; \addlegendentry{200}
 \end{axis}
 \end{tikzpicture}
-	\caption{Bonus based on minimum distance to win against baseline RAVE player}
+	\caption[Minimum Distance to Win Bonus]{Minimum Distance to Win Bonus Against Baseline RAVE Player}
 	\label{fig:distancetogether}
 \end{figure}
 
@@ -529,7 +529,7 @@ Next, using only the distance for the current player was tested, as in Figures \
 \addplot coordinates { (4,50.00) (5,52.02) (6,59.44) (7,51.77) (8,49.39) (9,36.04) (10,16.55) }; \addlegendentry{10}
 \end{axis}
 \end{tikzpicture}
-	\caption{Bonus based on own distance to win against baseline RAVE player}
+	\caption[Own Minimum Distance to Win]{Own Minimum Distance to Win Bonus Against Baseline RAVE Player}
 	\label{fig:distancesides}
 \end{figure}
 
@@ -566,7 +566,7 @@ We tested checking for mate-in-one moves after every move, and limiting the chec
 \addplot coordinates { (4,20.00) (5,37.96) (6,32.49) (7,37.41) (8,42.48) (9,33.13) (10,23.49) }; \addlegendentry{all}
 \end{axis}
 \end{tikzpicture}
-	\caption{Mate-in-one checking against baseline RAVE player with 5 seconds per move}
+	\caption{Mate-in-one Checking Against Baseline RAVE Player With 5 Seconds per Move}
 	\label{fig:mateinone}
 \end{figure}
 
@@ -589,7 +589,7 @@ We tested checking for mate-in-one moves after every move, and limiting the chec
 \addplot coordinates { (4,19.72) (5,52.56) (6,45.55) (7,62.08) (8,43.22) (9,61.09) (10,42.86) }; \addlegendentry{size*2}
 \end{axis}
 \end{tikzpicture}
-	\caption{Mate-in-one checking against baseline RAVE player with 30 seconds per move}
+	\caption{Mate-in-one Checking Against Baseline RAVE Player With 30 Seconds per Move}
 	\label{fig:mateinone30}
 \end{figure}
 
@@ -614,15 +614,15 @@ Looking for this pattern is extremely fast, causing no slowdown in terms of simu
 \addplot coordinates { (4,40.96) (5,46.32) (6,49.57) (7,46.11) (8,48.59) (9,43.28) (10,38.57) }; \addlegendentry{Maintain VC}
 \end{axis}
 \end{tikzpicture}
-	\caption{Maintain virtual connections in the rollout against baseline RAVE player}
+	\caption{Maintain Virtual Connections in the Rollout Against Baseline RAVE Player}
 	\label{fig:maintainvcrollout}
 \end{figure}
 
 \subsection{Last Good Reply}
 
-Last Good Reply (LGR) is a game independent method of improving the moves in a rollout by taking advantage of local situations. It attempts to reuse good moves in later rollouts by saving all the replies by the winning player and forcing the reply in later simulations if the reply is valid.
+Last Good Reply (LGR) is a game-independent method of improving the moves in a rollout by taking advantage of local situations. It attempts to reuse good moves in later rollouts by saving all the replies by the winning player and forcing the reply in later simulations if the reply is valid.
 
-LGR only saves the replies to individual moves. If a good reply is known to the opponent's last move, it is made instead of a random move. If that move is invalid, such as if there is already a stone in that cell, a random move is made instead.
+LGR only saves the replies to individual moves. If a good reply is known to the opponent's last move, it is made instead of a random move. If that move is invalid, a random move is made instead.
 
 If a reply was played, but the outcome of the rollout is a loss, that may not be such a good move, and so it should be forgotten. This variant, called Last Good Reply with Forgetting (LGRF) removes the replies for all the moves made by the losing player. This increases the amount of randomness in the rollouts as compared to LGR.
 
@@ -644,7 +644,7 @@ Figure \ref{fig:lgr} shows the results. LGR only works on size 4, while LGRF is 
 \addplot coordinates { (4,29.45) (5,46.19) (6,54.17) (7,65.18) (8,54.05) (9,58.64) (10,63.19) }; \addlegendentry{LGRF}
 \end{axis}
 \end{tikzpicture}
-	\caption{Last Good Reply against baseline RAVE player}
+	\caption{Last Good Reply Against Baseline RAVE Player}
 	\label{fig:lgr}
 \end{figure}
 
@@ -665,7 +665,7 @@ The three win conditions happen at different frequencies on different board size
 		   9 & 1365 &    229 & 8406 \\
 		   10 & 796 &    126 & 9078 \\
 	\end{tabular}
-	\caption{Number of wins of each type by board size given 10000 simulations}
+	\caption{Number of Wins of Each Type by Board Size Given 10000 Simulations}
 	\label{tab:wintypes}
 \end{table}
 
@@ -693,11 +693,11 @@ Four different solutions to this problem were explored. Instead of modifying whe
 \addplot coordinates { (4,52.14) (5,54.81) (6,55.56) (7,59.43) (8,46.24) (9,45.56) (10,34.11) }; \addlegendentry{0.80}
 \end{axis}
 \end{tikzpicture}
-	\caption{Ring rule ignore rings against baseline RAVE player}
+	\caption{Ring Rule Ignore Rings Against Baseline RAVE Player}
 	\label{fig:ringignore}
 \end{figure}
 
-The simplest rule modification is to simply ignore all occurrences of rings during some fraction of the rollouts. At the beginning of the rollout a random number is generated and if it's below the configurable fraction, rings are checked, otherwise all rings are ignored.
+The simplest rule modification is to simply ignore all occurrences of rings during some fraction of the rollouts. At the beginning of the rollout a random number is generated and if it is below the configurable fraction, rings are checked, otherwise all rings are ignored.
 
 The results are shown in Figure \ref{fig:ringignore}. There are minor successes on smaller boards, but bad results on bigger boards where rings are a problem. The bad results happen because it completely misses the opponent's real and faster ring threats, instead focusing on its own slower bridge and fork victories. By the time it notices the opponent's rings, it is too late to block them. This effect may be less pronounced against human opponents that are less likely to make ring threats, but it would introduce a new weakness that could be exploited.
 
@@ -717,7 +717,7 @@ The results are shown in Figure \ref{fig:ringignore}. There are minor successes 
 		   9 & 167.01 & 160.12 & 146.13 \\
 		  10 & 206.35 & 196.88 & 177.64 \\
 	\end{tabular}
-	\caption{Average number of moves in a rollout before this victory type}
+	\caption{Average Number of Moves in a Rollout Before Each Victory Type}
 	\label{tab:wintypedepth}
 \end{table}
 
@@ -744,7 +744,7 @@ The results are shown in Figure \ref{fig:ringignore}. There are minor successes 
 
 \end{axis}
 \end{tikzpicture}
-	\caption{Ring rule fixed depth against baseline RAVE player}
+	\caption{Ring Rule Fixed Depth Against Baseline RAVE Player}
 	\label{fig:ringdepth}
 \end{figure}
 
@@ -778,11 +778,11 @@ The results are shown in Figure \ref{fig:ringdepth}, showing results as high as 
 \addplot coordinates { (4,48.88) (5,55.56) (6,53.71) (7,43.14) (8,47.99) (9,50.88) (10,50.65) }; \addlegendentry{0.9}
 \end{axis}
 \end{tikzpicture}
-	\caption{Ring rule ring size against baseline RAVE player}
+	\caption{Ring Rule Ring Size Against Baseline RAVE Player}
 	\label{fig:ringsize}
 \end{figure}
 
-The most common rings are the simple size 6 ring, which are very easy to block. We may want to allow larger rings while still ignoring the easy to block 6 ring. Using the search-based ring check described in Section \ref{sec:ringimpl}, we can ignore rings smaller than a minimum value. In this test we start by allowing all rings, and after every N moves, we increase the minimum size by 1 for variable N. After the first N this would imply only rings of size 7 or bigger, then 8 or bigger, etc. Here we set N as a fraction of the remaining empty cells.
+The most commonly occuring ring  is the simple size 6 ring, which is easy to block. We may want to allow larger rings while still ignoring the easy to block 6 ring. Using the search-based ring check described in Section \ref{sec:ringimpl}, we can ignore rings smaller than a minimum value. In this test we start by allowing all rings, and after every N moves, we increase the minimum size by 1 for variable N. After the first N this would imply only rings of size 7 or bigger, then 8 or bigger, etc. Here we set N as a fraction of the remaining empty cells.
 
 The results are shown in Figure \ref{fig:ringsize}, again showing reasonable results on board sizes 5 and 6 with a winning rate of 60\%, but failing to show any improvement on larger board sizes. A fraction of 0.7 or 0.9 is so high that it never reaches a minimum size bigger than 7, though this is enough to ignore size 6 rings.
 
@@ -809,11 +809,11 @@ The results are shown in Figure \ref{fig:ringsize}, again showing reasonable res
 \addplot coordinates { (4,49.08) (5,58.42) (6,63.80) (7,58.58) (8,34.92) (9,21.15) (10,19.23) }; \addlegendentry{5}
 \end{axis}
 \end{tikzpicture}
-	\caption{Ring rule permanent stones against baseline RAVE player}
+	\caption{Ring Rule Permanent Stones Against Baseline RAVE Player}
 	\label{fig:ringperm}
 \end{figure}
 
-If the problem is that random moves form rings in empty parts of the board, another solution may be to only consider rings that include stones that exist on the board before the rollout begins. Thus ring threats may be formed from existing stones, but not purely out of randomness with little relation to the stones already existing on the board. In this test, stones that exist before the rollout begins are marked as permanent stones, and any ring found during the rollout must have a minimum number of permanent stones to be considered a winning formation. We tested requiring between 1 and 5 permanent stones, with the results shown in Figure \ref{fig:ringperm}. This shows a 50-100 elo gain on all board sizes. In human play it makes reasonable ring threats, but is no longer fixated on rings.
+If the problem is that random moves form rings in empty parts of the board, a solution may be to only consider rings that include stones that exist on the board before the rollout begins. Thus ring threats may be formed from existing stones, but not purely out of randomness with little relation to the stones already existing on the board. In this test, stones that exist before the rollout begins are marked as permanent stones, and any ring found during the rollout must have a minimum number of permanent stones to be considered a winning formation. Requiring between 1 and 5 permanent stones was tested, with the results shown in Figure \ref{fig:ringperm}. This shows a 50-100 elo gain on all board sizes. In human play it makes reasonable ring threats, but is no longer fixated on rings.
 
 
 \begin{table}
@@ -828,7 +828,7 @@ If the problem is that random moves form rings in empty parts of the board, anot
 		   9 & 8635 &    929 & 436 \\
 		  10 & 8768 &    971 & 261 \\
 	\end{tabular}
-	\caption{Number of wins of each type by board size given 10000 simulations when only counting rings with 3 or more permanent stones}
+	\caption{Number of Wins of Each Type by Board Size Given 10000 Simulations When Only Counting Rings With Three or More Permanent Stones}
 	\label{tab:wintypesperm}
 \end{table}
 
@@ -836,7 +836,7 @@ The results of using this feature when requiring a minimum of 3 permanent stones
 
 \section{Combinations}
 
-To show that these features combine, all of the features that showed positive results were combined into a single test case, and then single features were removed. All of these test cases were then tested against the same RAVE baseline as all the other tests were tested against. The heuristic knowledge features and rollout policy features are shown in separate graphs for clarity, but the test case marked 'All' is identical on these two graphs.
+To show that these features combine, all of the features that showed positive results were combined into a single test case, and then single features were removed. All of these test cases were then tested against the same RAVE baseline as all the other tests were tested against. The heuristic knowledge features and rollout policy features are shown in separate graphs for clarity, but the test case marked `All' is identical on these two graphs.
 
 The heuristic knowledge features that were included are:
 \begin{itemize}
@@ -877,7 +877,7 @@ The rollout policy features that were included are:
 \addplot coordinates { (4,47.98) (5,66.35) (6,76.15) (7,57.72) (8,72.36) (9,68.56) (10,49.46) }; \addlegendentry{Ring Perm}
 \end{axis}
 \end{tikzpicture}
-	\caption{Rollout modifications}
+	\caption{Rollout Modifications}
 	\label{fig:comborollout}
 \end{figure}
 
@@ -906,7 +906,7 @@ The rollout policy related features are shown in Figure \ref{fig:comborollout}. 
 \addplot coordinates { (4,38.78) (5,67.34) (6,73.17) (7,83.60) (8,78.98) (9,79.78) (10,69.54) }; \addlegendentry{Local Reply}
 \end{axis}
 \end{tikzpicture}
-	\caption{Knowledge modifications}
+	\caption{Knowledge Modifications}
 	\label{fig:comboknow}
 \end{figure}
 

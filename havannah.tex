@@ -10,7 +10,7 @@
 \HStoneGroup[color=white,label=$\mathcal B$]{a1,a2,b3,c3,d4,e4,e3,e2,f2,f1}
 \HStoneGroup[color=gray,label=$\mathcal R$]{e7,e8,d8,c8,b7,b6,b5,c5,d6}
 \end{HavannahBoard}
-\caption{The three winning conditions as shown on a size 6 Havannah board}
+\caption[The Three Havannah Winning Conditions]{The Three Havannah Winning Conditions, as shown on a size 6 Havannah board}
 \label{fig:rules}
 \end{figure}
 
@@ -72,7 +72,7 @@ Several coordinate systems for specifying board locations exist. The one that wi
 		\end{tabular}
 		}
 	}
-\caption{(a) The coordinates as drawn on a size 3 board. (b) The same board as represented on a square grid.}
+\caption[The Coordinate System]{The Coordinate System (a) as drawn on a size 3 board. (b) as represented on a square grid.}
 \label{fig:coordinates}
 \end{figure}
 
@@ -98,7 +98,7 @@ The state space complexity of Havannah is shown in Table \ref{table:complexity},
 	Size 9    &   217 & $2 \times 10^{101}$ & Go 13x13   & $10^{80}$  & \cite{tromp2007combinatorics}\\
 	Size 10   &   271 & $1 \times 10^{127}$ & Go 19x19   & $10^{171}$ & \cite{tromp2007combinatorics}\\
 	\end{tabular}
-	\caption{State space complexity of Havannah. Other board games are shown for comparison, * means solved.}
+	\caption[State Space Complexity of Havannah]{State Space Complexity of Havannah. Other board games are shown for comparison, * means solved.}
 	\label{table:complexity}
 \end{table}
 
@@ -154,7 +154,7 @@ Figure \ref{fig:falsevc} shows a state where black's three groups intuitively lo
 		\end{HavannahBoard}
 	}
 
-	\caption{(a) A simple virtual connection. (b) Virtual connections are not guaranteed. (c) A threat can force a response other than maintaining the connection. (d) A false virtual connection between 3 groups can be broken}
+	\caption[Virtual Connections]{(a) A simple virtual connection. (b) Virtual connections are not guaranteed. (c) A threat can force a response other than maintaining the connection. (d) A false virtual connection between 3 groups can be broken, as shown in (e)}
 	\label{fig:ringvc}
 \end{figure}
 
@@ -164,7 +164,7 @@ Figure \ref{fig:falsevc} shows a state where black's three groups intuitively lo
 A \textit{frame} is a series of virtually connected stones or chains of stones that if connected would complete a winning condition. The length of the frame is the number of moves needed to complete the winning chain. Several frames are shown in Figure \ref{fig:race}.
 
 
-\subsection{Simultaneous forced wins: Race to win}
+\subsection{Simultaneous Forced Wins: Race to Win}
 
 In Hex, winning formations are mutually exclusive, so if one player has a forced win through virtual connections, he is guaranteed to win. This is because the winning conditions are side-to-side VCs which cross, so if one player has a side-to-side VC, the other player cannot also have one.
 
@@ -192,7 +192,7 @@ In Havannah winning formations are not mutually exclusive. Figure \ref{fig:rules
 		\HGame[first player=black]{g6,a3,a4,b2,f4,c1}
 		\end{HavannahBoard}
 	}
-	\caption{(a) Both players have a forced win in 2 moves. (b) Both players have a forced win in 3 moves. (c) Continuing from (b) with Black to move, White wins
+	\caption[Simultaneous Forced Wins: Race to Win]{(a) Both players have a forced win in 2 moves. (b) Both players have a forced win in 3 moves. (c) Continuing from (b) with Black to move, White wins
 by threatening a faster ring connection.}
 	\label{fig:race}
 \end{figure}
@@ -234,7 +234,7 @@ Strong Hex programs reduce the moves under consideration by avoiding playing in 
 \end{HavannahBoard}
 
 \end{tabular}
-	\caption{Hex-dead cell patterns: The cell marked with a dot cannot help either player form a winning connection in Hex.}
+	\caption[Hex-dead Cell Patterns]{Hex-dead Cell Patterns. The cell marked with a dot cannot help either player form a winning connection in Hex.}
 	\label{fig:hexdeadcells}
 \end{figure}
 
@@ -263,7 +263,7 @@ Unfortunately the Hex-dead cell patterns don't apply in Havannah, because the He
 \draw [thick]    (b1) -- (c1) -- (d2) -- (d3) -- (c3) -- (b2) -- (b1);
 \end{HavannahBoard}
 \end{tabular}
-	\caption{Starting with the Hex-dead cell pattern on the left, and adding stones 1-4 leads to the ring on the right which intersects the Hex-dead cell}
+	\caption[Hex-dead Cells are not Havannah-dead Cells]{Hex-dead Cells are not Havannah-dead Cells. Starting with the Hex-dead cell pattern on the left, and adding stones 1-4 leads to the ring on the right which intersects the Hex-dead cell}
 	\label{fig:ringdeadcells}
 \end{figure}
 
@@ -304,7 +304,7 @@ Note that if the ring is made bigger than a simple 6-ring, any ring that uses th
 \end{HavannahBoard}
 
 \end{tabular}
-	\caption{Some Havannah dead cell patterns, the cells marked with the dot are dead in Havannah.}
+	\caption[Havannah Dead Cell Patterns]{Some Havannah Dead Cell Patterns. The cells marked with the dot are dead in Havannah.}
 	\label{fig:havdeadcells}
 \end{figure}
 
@@ -334,7 +334,7 @@ Unlike Hex, where a filled board must have a winner, draws are possible in Havan
 		\HGame{g7,a1,f5,g4,e3,d2,e2,d1,c2,d3,c3,f7,d6,b4,a4,b5,a3,e5,c4,b3}%, a2,c1,b1,f6,e4,d4,g6,e7,d7,b2,c5}
 		\end{HavannahBoard}
 	}
-	\caption{(a) Filled board ending as a draw. (b) After move 30 no wins are possible. (c) Proven draw after move 20.}
+	\caption[Havannah Draws]{(a) Filled board ending as a draw. (b) After move 30 no wins are possible. (c) Proven draw after move 20.}
 	\label{fig:draw}
 \end{figure}
 
@@ -345,7 +345,7 @@ Unlike Hex, where a filled board must have a winner, draws are possible in Havan
 
 The rules of Havannah are simple, and the three win conditions are easy to describe, but the implementation of the rules is not as obvious. This section will describe their implementation.
 
-\subsection{Fork and Bridge connections}
+\subsection{Fork and Bridge Connections}
 
 Both forks and bridges can be found in near $O(1)$ time using the union find algorithm. Each group includes a set of 12 bits, where each bit is associated with an edge or corner. Stones that are placed on a corner or edge set the associated bit on their group. As groups join, the bits for the groups are ORed together for the newly formed group. Once a group reaches two corners or three edges, that group forms a win condition.
 
@@ -408,7 +408,7 @@ Unlike forks and bridges, it is impractical to enumerate all the possible rings 
 		\draw [thick,->] (a2) -- (b2);
 		\end{HavannahBoard}
 	}
-	\caption{Search ring detection. Gray stone is the most recently placed and the start of the search. (a) Search after 1 step. (b) Search after 2 steps. (c) Search after 3 steps. (d) Search after 6 steps, ring found.}
+	\caption[Search Ring Detection]{Search Ring Detection. Gray stone is the most recently placed and the start of the search. (a) Search after 1 step. (b) Search after 2 steps. (c) Search after 3 steps. (d) Search after 6 steps, ring found.}
 	\label{fig:dfring}
 \end{figure}
 
@@ -457,9 +457,9 @@ The first approach, shown in Figure \ref{fig:dfring}, is to start a search from 
 		\draw [dotted]    (c3) -- (d3) -- (e4) -- (e5) -- (d5) -- (c4) -- (c3);
 		\end{HavannahBoard}
 	}
-	\caption{O(1) ring detection. Gray stone is the most recently placed. (a) Stone joins the white group twice with an empty stone between the two white stones, obviously a ring enclosing the empty stone. (b) Stone joins the white group three times, no empty stone, leads to (c) a tiny search. (d) Worst case has 5 neighbours, and does 3 extra checks.}
+	\caption[O(1) Ring Detection]{O(1) Ring Detection. Gray stone is the most recently placed. (a) Stone joins the white group twice with an empty stone between the two white stones, obviously a ring enclosing the empty stone. (b) Stone joins the white group three times, no empty stone, leads to (c) a tiny search. (d) Worst case has 5 neighbours, and does 3 extra checks.}
 	\label{fig:o1ring}
 \end{figure}
 
-Ring detection can be also be done in O(1) time, as shown in Figure \ref{fig:o1ring}, by using basic pattern detection. Rings occur when the most recently placed stone touches the same group twice with them being separated on both sides by empty space or the opponent's pieces. The only circumstance where that isn't true is a filled 6-ring, which can only happen in a small number of ways and is easy to detect. Figure \ref{fig:o1ringa} shows the common case where a stone joins a group twice and has empty space in the middle of the ring and on the opposite side. The surrounding 6 neighbours can be used as a pattern to lookup in a pattern database, which returns that it is a ring, isn't a ring, or that further searches are needed. If the center of the ring is filled, as is the case in Figure \ref{fig:o1ringb}, a check of the neighbours is enough to deduce that it might be a ring, but the remaining three cells must be checked to conclude it is a ring. The reason no bigger search is needed is because any bigger ring that passes through the newly placed stone would already be a ring passing through the existing stones and therefore would have been found earlier. The worst case, shown in Figure \ref{fig:o1ringd} is when the stone has 5 adjacent neighbours, in which case 3 extra checks for 6-rings are needed. This method is very fast in general, but does need to know the  does need to be done before joining the groups for the edge/corner checking. Doing the check before placing the stone likely means the conditions that allow the depth-first method to be skipped aren't known to be satisfied, meaning the check must be done for every move.
+Ring detection can be also be done in O(1) time, as shown in Figure \ref{fig:o1ring}, by using basic pattern detection. Rings occur when the most recently placed stone touches the same group twice with them being separated on both sides by empty space or the opponent's pieces. The only circumstance where that isn't true is a filled 6-ring, which can only happen in a small number of ways and is easy to detect. Figure \ref{fig:o1ringa} shows the common case where a stone joins a group twice and has empty space in the middle of the ring and on the opposite side. The surrounding 6 neighbours can be used as a pattern to lookup in a pattern database, which returns that it is a ring, isn't a ring, or that further searches are needed. If the center of the ring is filled, as is the case in Figure \ref{fig:o1ringb}, a check of the neighbours is enough to deduce that it might be a ring, but the remaining three cells must be checked to conclude it is a ring. The reason no bigger search is needed is because any bigger ring that passes through the newly placed stone would already be a ring passing through the existing stones and therefore would have been found earlier. The worst case, shown in Figure \ref{fig:o1ringd} is when the stone has 5 adjacent neighbours, in which case 3 extra checks for 6-rings are needed. This method is very fast in general, but needs to be done before joining the groups for the edge/corner checking. Doing the check before placing the stone likely means the conditions that allow the depth-first method to be skipped aren't known to be satisfied, meaning the check must be done for every move.
 

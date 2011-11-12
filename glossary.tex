@@ -10,7 +10,7 @@ Here are general game playing concepts and definitions:
 \item[Breadth-First Search] In a breadth-first search, all nodes at a specific depth will be considered before any nodes at a deeper depth, in increasing depth. This can be very memory intensive as all nodes up to the specified depth are usually kept in memory.
 \item[Depth-First Search] In a depth-first search (DFS), nodes are considered in a depth-first way. The full subtree of a node will be explored before any of its siblings will be explored. This is very memory efficient since it only needs to store the nodes along the path from the root to the current node, but leaves many nodes near the root unexplored for long periods of time.
 \item[Elo Rating] The elo rating system is a measure of relative strength of players. Two players with equal elo ratings would expect to each win half of their games. A difference of 400 elo means the player with the higher rating is expected to win 90\% of games between these two players. 100 elo translates to about a 65\% winning rate.
-\item[Game Complexity] is the size of the state space, sometimes taking transpositions into account. This can either be the number of unique positions or the number of possible games.
+\item[Game Complexity] The game complexity is the size of the state space, sometimes taking transpositions into account. This can either be the number of unique positions or the number of possible games.
 \item[Game Tree] A game can be represented as a game tree. Each position in the game is a node, and each move is an edge in the graph connecting the position before the move to the position after the move. When there are multiple paths to a position, the position can be represented as separate nodes, leading to a tree, or combined as a single node, leading to a directed acyclic graph (DAG). Some games have loops, where a position can be reached multiple times in a single game, leading to a directed graph.
 \item[Hash Value] A hash value is a representative number of a state used to detect transpositions. Transpositions all have the same hash value, but different states have different hash values. Often collisions are possible so two states that aren't a transposition have the same hash value, but this is very rare as large hash values (usually 64 bit unsigned integers) are used.
 \item[Heuristic] A heuristic function takes a position and returns a value associated with the position. This value often represents the likelihood of winning from that position, but can also be just an abstract number that can be compared against other values to order nodes or moves.
@@ -26,11 +26,11 @@ Here are general game playing concepts and definitions:
 \item[Ponder] Thinking during your opponent's time.
 \item[Root Node] The root node is the highest node in the tree. It has no parents, and there is exactly one of them in any tree.
 \item[State] A state is a full description of a board position. It includes the locations of all the pieces, and any other relevant information. In Chess, the state would include whether each king can castle, and whether a pawn can capture \textit{en passant}. In games where repeated moves are not allowed, the full game history may be included in the state. Occasionally a simplified version of the state is used when speed is more important than accuracy.
-\item[State Space] is the number of unique reachable states in the game.
+\item[State Space] The state space is the number of unique reachable states in the game.
 \item[Stochastic] A game is stochastic if it has elements of randomness, such as dice rolls. Backgammon is stochastic while Chess, Hex and Havannah are not.
 \item[Transposition] One state with multiple histories. If moves A-X-B leads to the same position as B-X-A, they are transpositions. They are the same state, so they will have the same minimax value (subject to history), and should not be searched twice.
 \item[Zero Sum Games] A zero sum game has the property that one player's gain is the other player's loss. A draw is still possible, but no move can help both players, so there is no incentive to cooperate.
-\item[Zobrist Hash] In some search spaces a hash value can be built up incrementally by XORing a random string associated with each move against a previous hash value.
+\item[Zobrist Hash] A hash value that is built up incrementally by XORing a random string associated with each move against a previous hash value.
 
 \end{description}
 
