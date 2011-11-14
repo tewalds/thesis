@@ -16,29 +16,15 @@ Castro, the implementation and test bed for all these tests is released open sou
 
 
 
-
 \section{Future Work}
 
-There is a long way to go before Havannah programs are comparable strength to strong human players, even after all the improvements presented here. Thankfully there are also many potential improvements left to try and to discover. Many ideas that have been tried in other games, such as Go, could be tried here. One of the large successes in Go is to use patterns, both small and large, both as heuristic knowledge and to improve the rollout policy. The strength of these patterns can be learned based on strong human games or even just strong games in self-play.
+There is a long way to go before Havannah programs are comparable strength to strong human players, even after all the improvements presented here. Thankfully there are also many potential improvements left to try and to discover. Many ideas that have been tried in other games, such as Go, could be tried here. One of the large successes in Go is to the use of patterns, both small and large, both as heuristic knowledge and to improve the rollout policy. The strength of these patterns can be learned based on strong human games, self-play or even on the fly from the results of rollouts.
 
 The large-scale parameter tuning that was used to generate all the results in Chapter \ref{playing} works, and is an effective way of understanding why a particular feature works. It is very inefficient, however, in terms of examining the state space of all the different features to find optimal parameters. Using a machine learning technique like minorization-maximization\cite{coulom2007computing}, which computes an elo rating for each feature, could be much more efficient. This would help show which features are strong and which can be inferred from the other features.
 
-Section \ref{sec:vc} showed that virtual connections, and therefore frames, are breakable. Despite this, frames are the foundation of how humans play. The first program to successfully make solid deductions based on frames, without paying a huge speed penalty, is likely to have a large advantage over all others. Even just using frames as a guide for a solver could be a large performance boost.
+Section \ref{sec:vc} showed that virtual connections, and therefore frames, are breakable. Despite this, frames are the foundation human play. The first program to successfully make solid deductions based on frames, without paying a huge speed penalty, is likely to have a large advantage over all others. Even just using frames as a guide for a solver could be a large performance boost.
 
 Using a hash table instead of a tree to reduce transpositions could significantly improve performance with longer times to play and on the smaller board sizes where transpositions are frequently reached. It does, however, present significant engineering challenges in terms of garbage collection and threading, and does introduce a tiny probability of inaccuracy in the form of hash collisions.
 
-
-
-%\begin{itemize}
-
-%\item copy proofs
-
-%\item opening book
-%\item shared tree between games (ie database)
-
-%\item proof number search player
-%\item share a tree between mcts and pns
-%\end{itemize}
-
-%tune against lajkonik!
+While proof number search wasn't tested extensively here, it could be interesting to try mixing MCTS and PNS, and try using PNS as a player.
 

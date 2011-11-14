@@ -9,7 +9,6 @@ The minimax algorithm is the foundation of all game playing algorithms. The goal
 
 \begin{figure}
 \centering
-\ovalbox{
 \begin{tikzpicture}[
 	level distance=15mm,
 	level 1/.style={sibling distance=60mm},
@@ -37,7 +36,7 @@ The minimax algorithm is the foundation of all game playing algorithms. The goal
   \draw[thick,->] (i) -- (d);
   \draw[thick,->] (l) -- (e);
   \draw[thick,->] (f) -- (c);
-\end{tikzpicture}}
+\end{tikzpicture}
 \caption[Minimax Tree]{Minimax Tree, squares are MAX nodes, circles are MIN nodes}
 \label{fig:minimaxtree}
 \end{figure}
@@ -144,7 +143,7 @@ A good move ordering can lead to many cutoffs and an associated speed increase. 
 
 \section{Proof Number Search} \label{sec:PNS}
 
-Proof Number Search (PNS) is a best-first search used to answer binary questions such as the outcome of a 2-player game starting from a given state. Being a binary outcome with the minimax property, it is well represented as an AND/OR tree when all values are from the perspective of the root player. Each node in the tree can have one of three values: Proven/Win, Disproven/Loss, or Unknown. All nodes store two numbers that show how close it is to being proven or disproven. The proof number (pn) is the minimum number of leaf nodes in the subtree that must be proven for the node to be proven. The disproof number (dn) is the minimum number of leaf nodes in the subtree that must be disproven for the node to be disproven. Some leaf nodes, if solved, will change the proof number of the root. Other leaf nodes, if solved, will change the disproof number of the root. Others, if solved, won't affect the proof or disproof numbers of the root. The Most Proving Nodes (MPN) are the intersection of the set that affect the proof number and the set that affect the disproof number at the root. Solving an MPN will definitely affect either the proof or disproof number of the root. Every tree is guaranteed to have at least one MPN. Proof Number search grows its tree by continually expanding an MPN.
+Proof Number Search (PNS)\cite{allis1994PNS} is a best-first search used to answer binary questions such as the outcome of a 2-player game starting from a given state. Being a binary outcome with the minimax property, it is well represented as an AND/OR tree when all values are from the perspective of the root player. AND nodes and OR nodes are analogous to MIN nodes and MAX nodes respectively in minimax. Each node in the tree can have one of three values: Proven/Win, Disproven/Loss, or Unknown. All nodes store two numbers that show how close it is to being proven or disproven. The proof number (pn) is the minimum number of leaf nodes in the subtree that must be proven for the node to be proven. The disproof number (dn) is the minimum number of leaf nodes in the subtree that must be disproven for the node to be disproven. Some leaf nodes, if solved, will change the proof number of the root. Other leaf nodes, if solved, will change the disproof number of the root. Others, if solved, won't affect the proof or disproof numbers of the root. The Most Proving Nodes (MPN) are the intersection of the set that affect the proof number and the set that affect the disproof number at the root. Solving an MPN will definitely affect either the proof or disproof number of the root. Every tree is guaranteed to have at least one MPN. Proof Number search grows its tree by continually expanding an MPN.
 
 Proof Number search can be split into 3 phases: descent, expansion, and update. The most proving node is found during the descent phase. It can be found by selecting the child with the minimum proof number when at an OR node and by selecting the child with the minimum disproof number when at an AND node. This is applied iteratively until a leaf node is reached. This leaf node is an MPN.
 
@@ -152,11 +151,10 @@ Once the most proving node $n$ is found, it is expanded, initializing all non-te
 
 After expansion, the proof and disproof numbers of all the ancestors of the most proving node must be updated using these formulas. For OR nodes: $$ n.pn = \displaystyle\min\limits_{i=0}^k n_i.pn,\quad n.dn = \displaystyle\sum\limits_{i=0}^k n_i.dn $$ For AND nodes: $$ n.pn = \displaystyle\sum\limits_{i=0}^k n_i.pn, \quad n.dn = \displaystyle\min\limits_{i=0}^k n_i.dn $$ Note how this backs up a single win at an OR node as a win, or a single loss at an AND node as a loss. It also backs up all losses at an OR node as a loss, and all wins at an AND node as a win. % Everywhere else it represents the optimistic lower bound on the number of nodes that must be (dis)proven to (dis)prove the current node.
 
-These three phases are repeated until the root is solved or the tree grows too big to be stored in memory. At the root, if $r.pn = 0$ it is solved as a win, or if $r.dn = 0$ it is solved as a loss, otherwise it is still unknown.
+These three phases are repeated until the root is solved or the tree grows too big to be stored in memory. At the root $r$, if $r.pn = 0$ it is solved as a win, or if $r.dn = 0$ it is solved as a loss, otherwise it is still unknown.
 
 \begin{figure}
 \centering
-\ovalbox{
 \begin{tikzpicture}[
 	level distance=15mm,
 	level 1/.style={sibling distance=60mm},
@@ -179,24 +177,23 @@ These three phases are repeated until the root is solved or the tree grows too b
     child {node [rectangle,draw,label=below:loss] {$f \frac{\infty}{0}$}}
     child {node [rectangle,draw,label=below:?] {$g \frac{1}{1}$}}
   };
-\end{tikzpicture}}
+\end{tikzpicture}
 \caption[Proof Number Search Tree]{Proof Number Search Tree, squares are OR nodes, circles are AND nodes, proof numbers are on top, disproof numbers on the bottom, based on \cite{winands2003-PDS-PN}}
 \label{fig:pntree}
 \end{figure}
 
 Consider the tree in Figure \ref{fig:pntree}. The most proving node is found by following the edges $a \rightarrow b \rightarrow e \rightarrow j$. If $j$ has a child that is a win, it would be backed up as a win at $j$, leading to a win at $e$, and a win at $b$, giving the root player a winning move from the root. With $a.pn = 1$ at the root, only 1 node was needed to be proven as a win for the root to also be proven as a win. If both $j$ and $l$ were proven to be losses, then $e$ would be a loss, leading $b$ to also be a loss, and consequently the root to also be a loss. This is reflected in $a.dn = 2$ at the root. If, however, $j$ has 1 non-terminal child $m$ and no terminal children, $m$ would have $m.pn = 1, m.dn = 1$ and would be the new MPN. If $j$ has 2 non-terminal children and no terminal children, $j.pn = 2, j.dn = 1$, and $l$ would be the new MPN.
 
-This algorithm selects nodes based on the shape and value of the tree, using no domain or game specific heuristic. It is guided towards slim parts of the tree, areas where there are few moves available, or where many moves are forced. In many games it is advantageous to have more moves available, or higher mobility, than your opponent. Proof Number search is very fast at solving these positions. In games or positions where the branching factor is constant or consistent, with few forced moves, Proof Number search approximates a slow breadth-first search, and thus isn't very fast.
+This algorithm selects nodes based on the shape and value of the tree, using no domain or game specific heuristic. It is guided to parts of the tree where fewer options need to be proven. This results in it favouring slim parts of the tree, areas where there are few moves available, or where many moves are forced. In many games it is advantageous to have more moves available, or higher mobility, than your opponent. This often happens by forcing the opponent's moves. Proof Number search is very fast at solving these positions. In games or positions where the branching factor is constant or consistent, with few forced moves, Proof Number search approximates a slow breadth-first search, and thus isn't very fast.
 
 Being a best-first search algorithm, the whole tree must be kept in memory, since any node could become an MPN and therefore be searched at any time. This makes it a memory-intensive search algorithm, with many of the variants attempting to reduce memory usage, allowing bigger problems to be solved.
 
-One simple optimization is to stop the update phase once the proof and disproof numbers don't change. This often happens when siblings have the same value, causing the sibling to be the new MPN. A new search can be started from this node instead of from the root. A simple memory optimization is to remove and reuse the memory of subtrees under a proven or disproven node.
+One simple optimization is to stop the update phase once the proof and disproof numbers don't change. This often happens when siblings have the same value, causing a sibling to be the new MPN. A new search can be started from this node instead of from the root. A simple memory optimization is to remove and reuse the memory of subtrees under a proven or disproven node.
 
 \subsection{The Negamax Formulation} \label{sec:NegaPDS}
 
 \begin{figure}
 \centering
-\ovalbox{
 \begin{tikzpicture}[
 	level distance=15mm,
 	level 1/.style={sibling distance=60mm},
@@ -219,7 +216,7 @@ One simple optimization is to stop the update phase once the proof and disproof 
     child {node [rectangle,draw,label=below:loss] {$f \frac{\infty}{0}$}}
     child {node [rectangle,draw,label=below:?] {$g \frac{1}{1}$}}
   };
-\end{tikzpicture}}
+\end{tikzpicture}
 \caption[Proof Number Search Tree using the Negamax Formulation]{Proof Number Search Tree using the Negamax Formulation, all nodes are OR nodes, $\phi$ is on top, $\delta$ is below, based on \cite{winands2003-PDS-PN}}
 \label{fig:negamaxtree}
 \end{figure}
@@ -252,18 +249,18 @@ void search(Node node, State state){
 }
 Node initnode(State state){
 	Node node; node.move = state.lastmove();
-	if(state.win()){       node.phi = 0;   node.delta = INF; }
+	if(state.win())      { node.phi = 0;   node.delta = INF; }
 	else if(state.loss()){ node.phi = INF; node.delta = 0;   }
-	else{                  node.phi = 1;   node.delta = 1;   }
+	else                 { node.phi = 1;   node.delta = 1;   }
 	return node;
 }
-bool updatePD(node){
+bool updatePD(Node node){
 	int phi = INF, delta = 0;
 	foreach(node.children as child){
 		phi = min(phi, child.delta);
 		delta = delta + child.phi;
 	}
-	bool changed = (node.phi == phi && node.delta == delta);
+	bool changed = (node.phi != phi || node.delta != delta);
 	node.phi = phi; node.delta = delta;
 	return changed;
 }
@@ -273,7 +270,7 @@ bool updatePD(node){
 \label{fig:pnscode}
 \end{figure}
 
-The pseudocode for Proof Number Search in the negamax formulation is shown in Figure \ref{fig:pnscode}.
+The pseudocode for Proof Number Search in the negamax formulation is shown in Figure \ref{fig:pnscode}. A State is the board state, and a Node is a node in the tree in memory.
 
 
 \subsection{Transposition Table}
@@ -281,39 +278,39 @@ The pseudocode for Proof Number Search in the negamax formulation is shown in Fi
 Proof number search uses an explicit tree which must be kept in memory, but the tree required is often bigger than available memory. One common approach to bounding the memory needed is to store the nodes in a transposition table instead of an explicit tree. This has the benefit of bounded memory as well as saving computation and memory on transpositions, at the cost of having to recompute nodes that are replaced in the transposition table. Even when a node needs to be recomputed, its children are often still in the transposition table, allowing for a quick recomputation. In many cases the transposition table can be several orders of magnitude smaller than would be needed to store the explicit tree.
 
 
-\subsection{DF-PN: Depth First Proof Number search} \label{sec:DF-PN}
+%\subsection{DF-PN: Depth First Proof Number search} \label{sec:DF-PN}
 
-Depth First Proof Number search (DF-PN)\cite{nagai1999-DFPN} uses two thresholds which are set to express how long the MPN stays in the current subtree. The thresholds are calculated based on the realization that there is no need to update the parents $\phi$ and $\delta$ and do a new move selection if the next descent will go to the same child node. As long as the child's $\delta$ is smaller or equal to all of its siblings, an MPN still lies in its subtree. By staying within this subtree, fewer updates are needed, and locality is maintained, using fewer active nodes and needing less recomputation.
+%Depth First Proof Number search (DF-PN)\cite{nagai1999-DFPN} uses two thresholds which are set to express how long the MPN stays in the current subtree. The thresholds are calculated based on the realization that there is no need to update the parents $\phi$ and $\delta$ and do a new move selection if the next descent will go to the same child node. As long as the child's $\delta$ is smaller or equal to all of its siblings, an MPN still lies in its subtree. By staying within this subtree, fewer updates are needed, and locality is maintained, using fewer active nodes and needing less recomputation.
 
-$n.th_\phi$ and $n.th_\delta$ are both set to $\infty$ at the root. $n.th_\phi$ and $n.th_\delta$ are computed as follows: $$n_c.th_\phi = n.th_\delta + n_c.\phi - \displaystyle\sum\limits_{i=0}^k n_i. \phi$$ $$n_c.th_\delta = min(n.th_\phi, n_2.\delta + 1)$$ where $n_c$ refers to the child with the smallest $\delta$ and $n_2$ is the child with the second smallest $\delta$. The search process continues at each node until $n.\phi \geq n.th_\phi$ or $n.\delta \geq n.th_\delta$.
+%$n.th_\phi$ and $n.th_\delta$ are both set to $\infty$ at the root. $n.th_\phi$ and $n.th_\delta$ are computed as follows: $$n_c.th_\phi = n.th_\delta + n_c.\phi - \displaystyle\sum\limits_{i=0}^k n_i. \phi$$ $$n_c.th_\delta = min(n.th_\phi, n_2.\delta + 1)$$ where $n_c$ refers to the child with the smallest $\delta$ and $n_2$ is the child with the second smallest $\delta$. The search process continues at each node until $n.\phi \geq n.th_\phi$ or $n.\delta \geq n.th_\delta$.
 
 
-\subsection{DF-PN+: DF-PN with Heuristics} \label{sec:DF-PN+}
+%\subsection{DF-PN+: DF-PN with Heuristics} \label{sec:DF-PN+}
 
-So far proof number search assumes that all leaf nodes are equally hard to prove, using only proof and disproof numbers, or more generally, the shape of the tree. DF-PN+ adds two types of heuristic evaluation \cite{nagai-thesis}.
+%So far proof number search assumes that all leaf nodes are equally hard to prove, using only proof and disproof numbers, or more generally, the shape of the tree. DF-PN+ adds two types of heuristic evaluation \cite{nagai-thesis}.
 
-$h(n)$ is a heuristic evaluation of the expected difficulty of proving or disproving a node and its subtree. DF-PN has a constant $h(n) = 1$. A small value means that this node is expected to be easy to (dis)prove while a big value means this node is expected to be hard to (dis)prove. This value is used at node initialization of non-terminal nodes: $$n.\phi = h_\phi(n), \quad n.\delta = h_\delta(n), \quad h(n) \ge 1$$
+%$h(n)$ is a heuristic evaluation of the expected difficulty of proving or disproving a node and its subtree. DF-PN has a constant $h(n) = 1$. A small value means that this node is expected to be easy to (dis)prove while a big value means this node is expected to be hard to (dis)prove. This value is used at node initialization of non-terminal nodes: $$n.\phi = h_\phi(n), \quad n.\delta = h_\delta(n), \quad h(n) \ge 1$$
 
-$cost(n, n_c)$ is the cost for moving from a node to a child, and affects the shape of the tree. DF-PN has a constant $cost(n, n_c) = 0$. Small values encourage narrow and deep trees while large values encourage wide and shallow trees. This value is a penalty to going deeper, and could be used to encourage deeper trees on moves that are evaluated to be better, or to find shallower solutions.
+%$cost(n, n_c)$ is the cost for moving from a node to a child, and affects the shape of the tree. DF-PN has a constant $cost(n, n_c) = 0$. Small values encourage narrow and deep trees while large values encourage wide and shallow trees. This value is a penalty to going deeper, and could be used to encourage deeper trees on moves that are evaluated to be better, or to find shallower solutions.
 
-Adding a non-zero $cost$ function means changing the update formulas:
-$$ n.\phi = \displaystyle\min\limits_{i=0}^k (n_i.\delta + cost_\delta(n, n_c))$$ $$n.\delta = \displaystyle\sum\limits_{i=0}^k (n_i.\phi + cost_\phi(n, n_c))$$
-as well as the threshold formulas:
-$$n_c.th_\phi = n.th_\delta + n_c.\phi - \displaystyle\sum\limits_{i=0}^k (n_i.\phi - cost_\delta(n, n_i))$$ $$n_c.th_\delta = min(n.th_\phi, n_2.\delta + cost_\phi(n, n_2) + 1) - cost_\phi(n, n_c)$$
+%Adding a non-zero $cost$ function means changing the update formulas:
+%$$ n.\phi = \displaystyle\min\limits_{i=0}^k (n_i.\delta + cost_\delta(n, n_c))$$ $$n.\delta = \displaystyle\sum\limits_{i=0}^k (n_i.\phi + cost_\phi(n, n_c))$$
+%as well as the threshold formulas:
+%$$n_c.th_\phi = n.th_\delta + n_c.\phi - \displaystyle\sum\limits_{i=0}^k (n_i.\phi - cost_\delta(n, n_i))$$ $$n_c.th_\delta = min(n.th_\phi, n_2.\delta + cost_\phi(n, n_2) + 1) - cost_\phi(n, n_c)$$
 
-While the values initialized by $h$ are overwritten when its children are expanded, the $cost$ persists until the node is solved. Given fast and effective $h$ and $cost$ functions, DF-PN+ can solve problems significantly faster than DF-PN.
+%While the values initialized by $h$ are overwritten when its children are expanded, the $cost$ persists until the node is solved. Given fast and effective $h$ and $cost$ functions, DF-PN+ can solve problems significantly faster than DF-PN.
 
-\subsection{The $1+\epsilon$ Trick} \label{sec:epstrick}
+%\subsection{The $1+\epsilon$ Trick} \label{sec:epstrick}
 
-One weakness of Proof Number search in general is that it requires a large amount of memory to store the tree. Depth first variants and transposition tables help, but many problems we want to solve need trees that are several orders of magnitude bigger than available memory. In cases where the memory limit is particularly tight, DF-PN can spend a huge amount of time regenerating subtrees. To reduce this effect, the $1+\epsilon$ Trick \cite{pawlewicz2007epsilon} increases the thresholds exponentially instead of linearly.
+%One weakness of Proof Number search in general is that it requires a large amount of memory to store the tree. Depth first variants and transposition tables help, but many problems we want to solve need trees that are several orders of magnitude bigger than available memory. In cases where the memory limit is particularly tight, DF-PN can spend a huge amount of time regenerating subtrees. To reduce this effect, the $1+\epsilon$ Trick \cite{pawlewicz2007epsilon} increases the thresholds exponentially instead of linearly.
 
-Consider the case where two children of the root (so $\infty$ thresholds) are both promising, but also hard to solve. Since Proof Number search likes keeping all children at similar values, the two will get roughly equal time. Once the subtrees become big, the time spent on one will overwrite the nodes from the other tree. Once its $\delta$ exceeds the other, the search will switch, taking up a large amount of memory, and overwriting the nodes from the subtree of the first child. Since the threshold is one higher than the second smallest, they will swap every time the tree gets rebuilt to exceed the other child by one. This linear increase in the threshold can mean an exponential increase in time.
+%Consider the case where two children of the root (so $\infty$ thresholds) are both promising, but also hard to solve. Since Proof Number search likes keeping all children at similar values, the two will get roughly equal time. Once the subtrees become big, the time spent on one will overwrite the nodes from the other tree. Once its $\delta$ exceeds the other, the search will switch, taking up a large amount of memory, and overwriting the nodes from the subtree of the first child. Since the threshold is one higher than the second smallest, they will swap every time the tree gets rebuilt to exceed the other child by one. This linear increase in the threshold can mean an exponential increase in time.
 
-If the threshold was not simply the second smallest + 1, but instead a multiple of it, the investment into this subtree wouldn't be overwritten so easily by its equally challenging siblings. The $1 + \epsilon$ trick therefore is to replace the $n_c.th_\delta$ threshold from DF-PN with $$n_c.th_\delta = min(n.th_\phi, n_2.\delta*(1 + \epsilon))$$ where $\epsilon$ is some small positive value. This way $n_c.th_\delta$ increases by a constant multiple instead of a constant. It leads to $n_c$ being called at most $log_{1+\epsilon}n.th = O(\log n.th)$ times instead of linear times before reaching its parent's threshold.
+%If the threshold was not simply the second smallest + 1, but instead a multiple of it, the investment into this subtree wouldn't be overwritten so easily by its equally challenging siblings. The $1 + \epsilon$ trick therefore is to replace the $n_c.th_\delta$ threshold from DF-PN with $$n_c.th_\delta = min(n.th_\phi, n_2.\delta*(1 + \epsilon))$$ where $\epsilon$ is some small positive value. This way $n_c.th_\delta$ increases by a constant multiple instead of a constant. It leads to $n_c$ being called at most $log_{1+\epsilon}n.th = O(\log n.th)$ times instead of linear times before reaching its parent's threshold.
 
-This trick encourages DF-PN to be even more depth-first, causing lower memory usage, more efficient usage of the transposition table, and reducing the number of node recalculations. Note that it no longer follows the same order as the original PNS, sometimes expanding a node that isn't an MPN, and therefore it may do an unbounded amount of extra work.
+%This trick encourages DF-PN to be even more depth-first, causing lower memory usage, more efficient usage of the transposition table, and reducing the number of node recalculations. Note that it no longer follows the same order as the original PNS, sometimes expanding a node that isn't an MPN, and therefore it may do an unbounded amount of extra work.
 
-% $\epsilon = 0.25$ has been shown to work well in practice.
+%% $\epsilon = 0.25$ has been shown to work well in practice.
 
 
 
@@ -326,17 +323,18 @@ For games where a fast and effective evaluation function exists, alpha-beta sear
 MCTS consists of four phases which together are called a simulation. The four phases, as shown in Figure \ref{fig:mcts}, are:
 
 \begin{figure}
+	\centering
 
-\includegraphics[width=\linewidth]{mcts-chaslot.png}
+\input{mcts}
 
-\caption[Four Phases of Monte Carlo Tree Search]{Four Phases of Monte Carlo Tree Search. This is a placeholder, taken from Chaslot (2006). It must be replaced to make the definitions match (rollout vs simulation). Also, I dislike that expansion only adds a single node, it means the descent phase needs to choose moves/nodes that aren't yet in the tree, contradicting the end case of leaf nodes. This complicates the explanation and doesn't match the pseudocode.}
+\caption[Four Phases of Monte Carlo Tree Search]{Four Phases of Monte Carlo Tree Search, together called a Simulation, shown in the negamax formulation with a minimum of 3 experience before expansion}
 \label{fig:mcts}
 \end{figure}
 
 \begin{description}
 \item[Descent] A path through the game tree from the root node down to a leaf node N is chosen. The path is chosen by recursively selecting a child by applying some criteria (based on the current winning rate and possibly some heuristic knowledge) until a leaf node is found.
 %This phase descends the game tree from the root to a leaf node N in the game tree. At each node one of the available moves is selected according to some criteria based on the current winning rate and possibly heuristic knowledge.
-\item[Expansion] If the node N has experience from a previous simulation, its children are expanded, increasing the size of the tree. It the node N has no previous experience, this phase is skipped until the next time the descent leads to this node.
+\item[Expansion] If the node N has enough experience from previous simulations, its children are expanded, increasing the size of the tree, otherwise this phase is skipped.
 \item[Rollout] A random game, a sequence of random moves, is played from N through the newly expanded children to the end of the game.
 %Heuristics can be used to make the moves less random and more representative of a real game. The strength of the overall algorithm is highly dependent on the average outcome of the random games being representative of the strength of the position.
 \item[Back-propagation] The outcome of the rollout is propagated back to each node along the path to the root. The winning rate of the moves made by the player that won the rollout is increased while winning rate of the moves by the player that lost the rollout is decreased.
@@ -346,7 +344,7 @@ These four phases are repeated continually until a stopping condition is reached
 
 Once a stopping condition has been reached, a move is chosen by some criteria. The four most common criteria are: most simulations, most wins, highest winning rate, and highest lower confidence bound on winning rate. Using the most simulations is the most conservative, but if a counter-move was found late in the game, it may still be the most simulated even if it doesn't have the highest winning rate. Using the most wins is a little less conservative and will favour a late new-comer if it has almost caught up. Use of the highest winning rate is quite risky since it may favour a move that has a very small subtree where a good counter move exists but hasn't been found yet. To deal with that a lower bound can be used, but a large confidence interval should be used to avoid choosing risky moves.
 
-The pseudocode for MCTS is shown in Figure \ref{fig:mctscode}. This code glosses over a few important points, such as how the value of a node is computed, how nodes are initialized, and how random moves are chosen. Some common ways of implementing these details are explained in the next sections. UCT, RAVE and heuristic knowledge (described below) address the value of a node and node initialization. Rollout policy addresses how random moves are chosen.
+The pseudocode for MCTS is shown in Figure \ref{fig:mctscode}. A State is the board state, and a Node is a node in the tree in memory. This code glosses over a few important points, such as how the value of a node is computed, how nodes are initialized, and how random moves are chosen. Some common ways of implementing these details are explained in the next sections. UCT, RAVE and heuristic knowledge (described below) address the value of a node and node initialization. Rollout policy addresses how random moves are chosen.
 
 \begin{figure}
 
@@ -392,7 +390,7 @@ int search(Node node, State state){
 
 \subsection{UCT: Upper Confidence bounds as applied to Trees}\label{sec:uct}
 
-The most common and most famous formula for the descent phase of MCTS is Upper Confidence bounds as applied to Trees (UCT) \cite{kocsis2006uct}. It derives from Upper Confidence Bounds (UCB), which is used on the multi-armed bandit problem. It is used to balance exploitation and exploration when multiple options are available and each option returns a random distribution of reward. The amount of regret, i.e., the number of plays to non-optimal arms, should be minimized to maximize reward in the long term.
+The most common and most famous formula for the descent phase of MCTS is Upper Confidence bounds as applied to Trees (UCT) \cite{kocsis2006uct}. It derives from the Upper Confidence Bounds (UCB) formula, which is used on the multi-armed bandit problem. UCB is used to balance exploitation and exploration when multiple options are available and each option returns a random distribution of reward. The amount of regret, i.e., the number of plays to non-optimal arms, should be minimized to maximize reward in the long term. UCT applies this idea to a tree of choices.
 
 In the descent phase at node $n$, a child node must be chosen according to some criteria. UCT chooses the child node $n_i$ that maximizes the value of:
 \begin{equation}\label{eqn:uct} n_i.v + c*\sqrt{\frac{\ln(n.n)}{n_i.n}}\end{equation}
@@ -412,7 +410,7 @@ Several formulas for $\beta$ have been proposed. The simplest two formulas for $
  both of which have a tunable constant $k$ which represents the midpoint, the number of simulations needed for the RAVE experience and real experience to have equal weight.
 
 David Silver computed an optimal formula for $\beta$ under the assumption of independence of estimates:
-\begin{equation}\label{eqn:rave4} \beta = \frac{n_i.r}{n_i.n+n_i.r+4*n_i.n*n_i.r*b^2} \end{equation}
+\begin{equation}\label{eqn:rave4} \beta = \frac{n_i.m}{n_i.n+n_i.m+4*n_i.n*n_i.m*b^2} \end{equation}
 where $b$ is a tunable RAVE bias value.
 
 In practice, RAVE leads to a large increase in playing strength for games such as Go and Havannah where the assumption that a good move is also good if played earlier holds. The RAVE updates often lead to sufficiently large exploration that the constant in the UCT exploration term is set very low or even to 0, removing UCT exploration altogether.
@@ -434,25 +432,16 @@ Instead of pure random, a weighted random scheme can be used. Moves that have go
 
 The Last Good Reply \cite{drake2009lgr, baier2010lgrf} scheme can be used, where the moves made by the player that won a rollout are saved for use in later rollouts when similar situations occur. When these moves fail to lead to a win in a later rollout, they may be removed from the list of replies.
 
-All possible moves can be checked to see if they lead to an instant win, in which case that move should be made. Similarly if this turn is skipped would each move lead to an instant loss if not made, in which case the defensive should be forced.
+All possible moves can be checked to see if they lead to an instant win if made, or an instant loss if made by the opponent. If a winning moves exists, it should be made, and if the opponent has a winning move, it should be blocked.
 
 
-\subsection{TODO}
+\section{Summary}
 
-Replace the MCTS figure.
+Several game playing and solving algorithms exist, but they're all based on minimax. Minimax chooses the move that minimizes the maximum outcome the opponent can achieve.
 
-Fix up or remove the PNS section.
+Alpha-beta is a refinement to minimax that prunes parts of the tree that can't affect the minimax value of the root. Transposition tables reduce the search space from a tree to a graph, reducing the search space. Iterative deepening, allows an early result to be returned, and combined with transposition tables, gives better move ordering allowing deeper searches. The history heuristic also improves move ordering.
 
-%\subsection{Other extensions}
+Proof number search is an algorithm for solving the outcome of games. It maintains estimates of the difficulty of solving a subtree, preferring to solve easier parts of the tree. This leads to it preferring to explore forced moves and slim parts of the tree. A transposition table can be used to reduce the search space and solve problems that are bigger than physical memory.
 
-%should any of these be described?
-
-%\begin{itemize}
-%\item parallelization
-%\item dynamic widening
-%\item Solution backups
-%\item multiple rollouts per simulation
-%\item avoid symmetries or transpositions
-%\item first player urgency
-%\end{itemize}
+Monte-Carlo Tree Search is a game playing algorithm that works well on problems where no good heuristic is known. It consists of four phases: descent, expansion, rollout and back-propagation. It chooses a leaf node, grows the tree, plays a random sequence of moves, and uses the outcome of this random game to bias the next descent. MCTS can be improved by choosing a good balance between exploration and exploitation. Gaining experience from the moves made within rollouts can be a big help, as can biasing the descent towards better moves based on heuristic knowledge. A rollout policy that leads to outcomes that are more representative of the true outcome is also useful.
 

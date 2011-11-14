@@ -1,19 +1,147 @@
 % vim: set wrap
 
-%The first published attempt at writing a program to play Havannah is a BSc thesis by Terry Rogers in 2004. In his thesis, he describes implementing several very weak strategies, easily beaten by a human who was just introduced to the game. An alpha-beta player has been attempted, as shown by Johan de Koning's program PZN, which was blind to rings. The majority of the literature about playing Havannah is based on Monte-Carlo Tree Search though. Monte-carlo Tree Search is well suited to Havannah, as there is no known good heuristic. It also has several similarities to the games of Go and Hex where MCTS has been shown to work very well.
 
-%Several papers have been written about playing Havannah before. Teytaud\cite{teytaud2010creating} showed that UCT and RAVE work well in Havannah. Fossel\cite{fossel2010monte} showed that RAVE works well and tested a few other features. He found that checking for a winning moves (mate-in-one moves) in the rollout improves the playouts and therefore the strength. Lorentz\cite{lorentz2011improving} also tested checking for mate-in-one moves as well as blocking those moves and found an improvement. He used a rollout policy to encourage playing near previous stones. He backed up proven positions within the tree, potentially solving the root board position. He also found success with progressive widening.
+These are early days for developing strong Havannah programs. The first published attempt at writing a program to play Havannah is a BSc thesis by Terry Rogers in 2004 \cite{rogers2004bsc}. In his thesis, he describes implementing several weak strategies, easily beaten by even the most amateur human player. Johan de Koning wrote an alpha-beta based Havannah program, named PZN, which competed in the 2010 ICGA Olympiad. It finished in last place because its heuristic function, which is quite similar to the distance to win heuristic shown in Section \ref{sec:distwin}, is blind to rings, virtual connections and most threats, and is too slow for alpha-beta to reach sufficient depths to overcome these shortcomings. The majority of attempts, and particularly published attempts, have been Monte-Carlo Tree Search (MCTS) based, primarily because MCTS does not need a heuristic evaluation function. This has also been influenced by MCTS's recent successes in the similar games of Go and Hex where MCTS has overtaken traditional techniques. Given this, MCTS is a good starting point for writing a Havannah player. This chapter will explore the performance of various search algorithms and enhancements as applied to Havannah using the Havannah program named Castro.
 
-These are early days for developing strong Havannah programs. The first published attempt at writing a program to play Havannah is a BSc thesis by Terry Rogers in 2004 \cite{rogers2004bsc}. In his thesis, he describes implementing several weak strategies, easily beaten by even the most amateur human player. The only alpha-beta based Havannah program is Johan de Koning's program PZN, which competed in the 2010 ICGA Olympiad. It finished in last place because its heuristic function, which is quite similar to the distance to win heuristic shown in Section \ref{sec:distwin}, is blind to rings, virtual connections and most threats, and is too slow to for alpha-beta to reach sufficient depths for that to not matter. The majority of attempts, and particularly published attempts, have been Monte-Carlo Tree Search based, primarily because MCTS does not need a heuristic evaluation function. This has also been influenced by MCTS's recent successes in the similar games of Go and Hex where MCTS has overtaken traditional techniques. Given this, MCTS is a good starting point for writing a Havannah player. This chapter will explore the performance of various search algorithms and enhancements as applied to Havannah using the Havannah program named Castro.\footnote{https://github.com/tewalds/castro}
 
-UCT has strong guarantees about eventual optimality, so is the first baseline. After a few games, an exploration constant of 0.9 was chosen as a reasonable value to test against. RAVE has been shown by Teytaud to be strong in Havannah\cite{teytaud2010creating}, and this finding will be confirmed in Section \ref{sec:playingrave}. For all tests thereafter, a RAVE player will be used as the baseline player. The RAVE baseline has no UCT exploration, keeps the tree between moves, and does 2-ply node expansion backups. Unless otherwise stated, all data points are based on several hundred games played with 5 seconds per move.
+\section{Castro}
+
+Castro is a strong Havannah program written by the author of this thesis, and released open source at \url{https://github.com/tewalds/castro}. It is written in C++, and includes an MCTS player and several solvers. It has a fast implementation of the rules, which are described in the Section \ref{sec:impl}. Castro speaks the GTP protocol,\footnote{Go Text Protocol: \url{http://www.lysator.liu.se/~gunnar/gtp/}} and can be played against with HavannahGui.\footnote{\url{http://mgame99.mg.funpic.de/havannah.php}} The MCTS player is the main topic of discussion of the rest of this thesis, and is used both as a player and as a solver.
+
+Castro includes an alpha-beta solver with iterative deepening and an optional transposition table. This alpha-beta solver is not useful as a player, as it lacks a heuristic evaluation of non-terminal nodes. It is the fastest of the solvers in terms of positions evaluated per second, but is rarely the fastest to solve non-trivial positions.
+
+Castro includes three proof number search (PNS) solvers. The basic PNS solver is single-threaded and uses a tree data structure similar to the one described in Section \ref{sec:memory}. The second PNS solver is multi-threaded but uses the same tree data structure and includes garbage collection similar to Section \ref{sec:gc}. The third PNS solver is single-threaded but uses a transposition table instead of a tree. All three PNS solvers optionally use depth-first thresholds\cite{nagai1999-DFPN} as well as the $1+\epsilon$ trick\cite{pawlewicz2007epsilon}. They also use a 2-ply lookahead, similar to Section \ref{sec:proofbackups}. The tree based solvers can optionally use the distance to win heuristic described in Section \ref{sec:distwin}, while the transposition table based solver can attempt to copy a proof to its siblings. The multi-threaded version could easily be turned into a player, but this has not been done yet.
+
+
+\section{Havannah Rules Implementation}\label{sec:impl}
+
+The rules of Havannah are simple, and the three win conditions are easy to describe, but a fast implementation of the rules is not as obvious. This section will describe their implementation in Castro.
+
+\subsection{Fork and Bridge Connections}
+
+Both forks and bridges can be found in near $O(1)$ time using the union find algorithm. Each group includes a set of 12 bits, where each bit is associated with an edge or corner. Stones that are placed on a corner or edge set the associated bit on their group. As groups join, the bits for the groups are ORed together for the newly formed group. Once a group reaches two corners or three edges, that group forms a win condition.
+
+\subsection{Rings}\label{sec:ringimpl}
+
+Unlike forks and bridges, it is impractical to enumerate all the possible rings and wait for one of them to occur. Instead they can be detected with a limited search or with local patterns. Each of these approaches has advantages, so both are described here.
+
+\subsubsection{Search}
+
+\begin{figure}
+	\centering
+	\subfloat[]{\label{fig:dfringa}
+		\begin{HavannahBoard}[board size=3,coordinate style=classical,show coordinates=false]
+		\HStoneGroup[color=light gray]{b2}
+		\HStoneGroup[color=white]{c3,c4,b4,a3,a2, d3,d4}
+		\draw [thick,->] (b2) -- (a1);
+		\draw [thick,->] (b2) -- (b1);
+		\draw [thick,->] (b2) -- (c2);
+		\draw [thick,->] (b2) -- (c3);
+		\end{HavannahBoard}
+	}
+	\subfloat[]{\label{fig:dfringb}
+		\begin{HavannahBoard}[board size=3,coordinate style=classical,show coordinates=false]
+		\HStoneGroup[color=light gray]{b2}
+		\HStoneGroup[color=white]{c3,c4,b4,a3,a2, d3,d4}
+		\draw [thick]    (b2) -- (c3);
+		\draw [thick,->] (c3) -- (d3);
+		\draw [thick,->] (c3) -- (d4);
+		\draw [thick,->] (c3) -- (c4);
+		\end{HavannahBoard}
+	}
+	\subfloat[]{\label{fig:dfringc}
+		\begin{HavannahBoard}[board size=3,coordinate style=classical,show coordinates=false]
+		\HStoneGroup[color=light gray]{b2}
+		\HStoneGroup[color=white]{c3,c4,b4,a3,a2, d3,d4}
+		\draw [thick]    (b2) -- (c3);
+		\draw [thick] (c3) -- (d3);
+		\draw [thick] (c3) -- (d4);
+		\draw [thick] (c3) -- (c4);
+		\draw [thick,->] (d3) -- (d2);
+		\draw [thick,->] (d3) -- (e3);
+		\draw [thick,->] (d3) -- (e4);
+		\draw [thick,->] (d4) -- (e4);
+		\draw [thick,->] (d4) -- (e5);
+		\draw [thick,->] (d4) -- (d5);
+		\draw [thick,->] (c4) -- (d5);
+		\draw [thick,->] (c4) -- (c5);
+		\draw [thick,->] (c4) -- (b4);
+		\end{HavannahBoard}
+	}
+	\subfloat[]{\label{fig:dfringd}
+		\begin{HavannahBoard}[board size=3,coordinate style=classical,show coordinates=false]
+		\HStoneGroup[color=light gray]{b2}
+		\HStoneGroup[color=white]{c3,c4,b4,a3,a2, d3,d4}
+		\draw [thick]    (b2) -- (c3);
+		\draw [thick]    (c3) -- (c4);
+		\draw [thick]    (c4) -- (b4);
+		\draw [thick,->] (b4) -- (a3);
+		\draw [thick,->] (a3) -- (a2);
+		\draw [thick,->] (a2) -- (b2);
+		\end{HavannahBoard}
+	}
+	\caption[Ring Detection Search]{Search Ring Detection. Gray stone is the most recently placed and the start of the search. (a) Search after 1 step. (b) Search after 2 steps. (c) Search after 3 steps. (d) Search after 6 steps, ring found.}
+	\label{fig:dfring}
+\end{figure}
+
+The first approach, shown in Figure \ref{fig:dfring}, is to start a search from the most recently placed stone. This search could be a recursive depth-first search or a breadth-first search. The recursive depth-first search was faster in testing, but the breadth-first variant is shown in Figure \ref{fig:dfring} for clarity. The search is only started if the group has at least six stones, and if the last stone joins one group of stones twice. From the starting stone, it searches in four adjacent directions (four is enough because any ring must start from one of the four directions even if it cycles back through the other two), continuing only in the forward direction to the next three stones. By avoiding sharp turns, the minimum cycle is 6 and any path back to the starting stone is a ring. This method could be quite slow when searching big groups but is fast in practice because the ring check can be skipped after most moves. It has the advantage that properties of the ring can be computed based on the stones that form it, as will be described in more detail in Section \ref{sec:ringrules}.
+
+
+\subsubsection{Patterns}
+
+\begin{figure}
+	\centering
+	\subfloat[]{\label{fig:o1ringa}
+		\begin{HavannahBoard}[board size=3,coordinate style=classical,show coordinates=false]
+		\HStoneGroup[color=light gray]{b2}
+		\HStoneGroup[color=white]{c3,c4,b4,a3,a2, d3,d4}
+		\draw [thick,->] (b2) -- (a2);
+		\draw [thick,->] (b2) -- (c3);
+		\end{HavannahBoard}
+	}
+	\subfloat[]{\label{fig:o1ringb}
+		\begin{HavannahBoard}[board size=3,coordinate style=classical,show coordinates=false]
+		\HStoneGroup[color=light gray]{b2}
+		\HStoneGroup[color=white]{c3,c4,b4,a3,a2, d3,d4,b3}
+		\draw [thick,->] (b2) -- (c3);
+		\draw [thick,->] (b2) -- (a2);
+		\draw [thick,->] (b2) -- (b3);
+		\end{HavannahBoard}
+	}
+	\subfloat[]{\label{fig:o1ringc}
+		\begin{HavannahBoard}[board size=3,coordinate style=classical,show coordinates=false]
+		\HStoneGroup[color=light gray]{b2}
+		\HStoneGroup[color=white]{c3,c4,b4,a3,a2, d3,d4,b3}
+		\draw [thick]    (b2) -- (c3) -- (c4) -- (b4) -- (a3) -- (a2) -- (b2);
+		\end{HavannahBoard}
+	}
+	\subfloat[]{\label{fig:o1ringd}
+		\begin{HavannahBoard}[board size=3,coordinate style=classical,show coordinates=false]
+		\HStoneGroup[color=light gray]{c3}
+		\HStoneGroup[color=white]{d3,d4,c4,b3,b2, e4,e5,c5,a3,a2}
+		\draw [thick,->] (c3) -- (d3);
+		\draw [thick,->] (c3) -- (d4);
+		\draw [thick,->] (c3) -- (c4);
+		\draw [thick,->] (c3) -- (b3);
+		\draw [thick,->] (c3) -- (b2);
+		\draw [dotted]    (c3) -- (c4) -- (b4) -- (a3) -- (a2) -- (b2) -- (c3);
+		\draw [dotted]    (c3) -- (d4) -- (d5) -- (c5) -- (b4) -- (b3) -- (c3);
+		\draw [dotted]    (c3) -- (d3) -- (e4) -- (e5) -- (d5) -- (c4) -- (c3);
+		\end{HavannahBoard}
+	}
+	\caption[Ring Detection O(1)]{O(1) Ring Detection. Gray stone is the most recently placed. (a) Stone joins the white group twice with an empty stone between the two white stones, obviously a ring enclosing the empty stone. (b) Stone joins the white group three times, no empty stone, leads to (c) an extra check. (d) Worst case has 5 neighbours, and does 3 extra checks.}
+	\label{fig:o1ring}
+\end{figure}
+
+Ring detection can be also be done in O(1) time, as shown in Figure \ref{fig:o1ring}, by using basic pattern detection. Rings occur when the most recently placed stone touches the same group twice with them being separated on both sides by empty space or the opponent's pieces. The only circumstance where that isn't true is a filled 6-ring, which can only happen in a small number of ways and is easy to detect. Figure \ref{fig:o1ringa} shows the common case where a stone joins a group twice and has empty space in the middle of the ring and on the opposite side. The surrounding 6 neighbours can be used as a pattern to lookup in a pattern database, which returns that it is a ring, isn't a ring, or that further checks are needed. If the center of the ring is filled, as is the case in Figure \ref{fig:o1ringb}, a check of the neighbours is enough to deduce that it might be a ring, but the remaining three cells must be checked to conclude it is a ring. The reason no bigger search is needed is because any bigger ring that passes through the newly placed stone would already be a ring passing through the existing stones and therefore would have been found earlier. The worst case, shown in Figure \ref{fig:o1ringd} is when the stone has 5 adjacent neighbours, in which case 3 extra checks for 6-rings are needed. This method is very fast in general, but needs to be done before joining the groups for the edge/corner checking. Doing the check before placing the stone likely means the conditions that allow the depth-first method to be skipped aren't known to be satisfied, meaning the check must be done for every move.
+
 
 
 \section{Testing Methodology}
 
-All testing was done using ParamLog,\footnote{https://github.com/tewalds/ParamLog} an open source distributed testing framework written for this project. Tests were run on board sizes 4 through 10 with 1, 2, 5 and 10 seconds per move. The times are standardized to a machine that can complete 500,000 simulations on size 4 with basic UCT in 11 seconds, which is approximately equal to a Core 2 Duo 2.4ghz. This has the added effect of keeping results comparable across machines and in the face of optimizations. Only the results from the tests with 5 seconds are shown, because this has been common among other published papers about Havannah, but also because most test cases are fairly consistent between different amounts of time.
+All testing was done using ParamLog,\footnote{\url{https://github.com/tewalds/ParamLog}} an open source distributed testing framework written for this project. Tests were run on board sizes 4 through 10 with 1, 2, 5 and 10 seconds per move. The times are standardized to a machine that can complete 500,000 simulations on size 4 with basic UCT in 11 seconds, which is approximately equal to a Core 2 Duo 2.4ghz. This has the added effect of keeping results comparable across machines and in the face of optimizations. Only the results from the tests with 5 seconds are shown, because this has been common among other published papers about Havannah, but also because most test cases are fairly consistent between different amounts of time. All data points are based on several hundred games, which gives a maximum 95\% confidence interval of $\pm 5\%$, with many as low as as $\pm 2\%$.
 
-All tests are played relative to a baseline. The first baseline is UCT.
+All tests are played relative to a baseline. UCT has strong guarantees about eventual optimality, so is the first baseline. After a few games, an exploration constant of 0.9 was chosen as a reasonable value to test against. RAVE has been shown by Teytaud to be strong in Havannah\cite{teytaud2010creating}, and this finding will be confirmed in Section \ref{sec:playingrave}. For all tests thereafter, a RAVE player will be used as the baseline player. The RAVE baseline has no UCT exploration, keeps the tree between moves, and does 2-ply node expansion backups.
 
 
 \section{RAVE}\label{sec:playingrave}
@@ -140,7 +268,7 @@ Terminal nodes are found in the expansion phase. If a winning move is found, the
 
 Lorentz showed a board position, shown here in Figure \ref{fig:lorentzproof}, which his program, Wanderer, solves in 45 minutes. Using RAVE and proof backups but a purely random rollout policy and no heuristic knowledge, Castro solves it in under a minute.
 
-Figure \ref{fig:proofbackups} shows the results from using proof backups. It compares using 2-ply versus 1-ply and 0-ply lookahead. One ply means only checking for winning moves but not checking for the opponent's threats. Two ply means checking for winning moves and for the opponent's threats. Backing up proofs seems to be give a 75-90\% winning rate on all board sizes, which is worth about 100-300 elo. At the olympiad, Castro solved the outcome of the game about 15 moves before the end. Because it keeps the tree between moves, the remaining moves were played out of its precomputed proof tree.
+Figure \ref{fig:proofbackups} shows the results from using proof backups. It compares using 2-ply versus 1-ply and 0-ply lookahead. One ply means only checking for winning moves but not checking for the opponent's threats. Two ply means checking for winning moves and for the opponent's threats. Backing up 2-ply proofs gives a 75-90\% winning rate on all board sizes, which is worth about 200-300 elo. At the olympiad, Castro solved the outcome of all 16 games about 15 moves before the end. Because it keeps the tree between moves, the remaining moves were played out of its precomputed proof tree.
 
 
 \section{Multiple Rollouts}
@@ -544,7 +672,7 @@ If the opportunity to win with a single move (mate-in-one) exists, a smart playe
 
 Mate-in-one checks are very slow. The obvious way of implementing it is to check every empty cell for each player for whether a move there would complete a win condition. This is $O(n)$ of the number of cells, which makes rollouts $O(n^2)$. A simple optimization is to only do the win check if that cell is next to an existing stone, but this is still $O(n)$. A much better algorithm is to only do win checks on the empty cells next to the group that was last played, which is roughly $O(g)$ where $g$ is the group size and $g \ll n$. This works because we are making the assertion that no mate-in-one moves exists before the last move, and so a new mate-in-one must be related to the last played stone. If the last played stone creates one new winning cell, we must block it. If it creates two new winning cells, it has a guaranteed win, and so we just end the rollout early. Castro does not have a facility to enumerate the empty cells surrounding a group, so instead it does a walk around the group. There must be a position around the cell that is not part of the same group, even if it is off the board. If this was not true, then it would be in the center of a ring, and the game would already be finished. It then follows the edge of the group, checking only whether placing an additional stone in the neighbouring empty cells would turn that group into a winning structure. The walk ends when it gets back to the first position searched. An additional untested optimization would be to only do this check if the last placed stone has a connection to an edge or corner, though this ignores ring threats.
 
-We tested checking for mate-in-one moves after every move, and limiting the checks to only to the first N moves with N equal to the board size and double the board size. The results are shown in Figure \ref{fig:mateinone}. The best result is achieved exactly where Lorentz and Fossel reported their success, on size 5, but all other cases were inconclusive or quite negative. Discussions with other Havannah programmers suggested mate-in-one checks become more important as the time per move is increased, so size and size*2 were tested with 30 seconds per move, with the results shown in Figure \ref{fig:mateinone30}. The results are more promising, but do have bigger confidence intervals due to the time consuming process of testing such long games.
+We tested checking for mate-in-one moves after every move, and limiting the checks to only to the first N moves with N equal to the board size and double the board size. The results are shown in Figure \ref{fig:mateinone}. The best result is achieved exactly where Lorentz and Fossel reported their success, on size 5, but all other cases were inconclusive or quite negative. Discussions with other Havannah programmers suggested mate-in-one checks become more important as the time per move is increased, so size and size*2 were tested with 30 seconds per move, with the results shown in Figure \ref{fig:mateinone30}. The results are better, with gains as high as 100 elo.
 
 \begin{figure}
 	\centering
@@ -595,7 +723,7 @@ We tested checking for mate-in-one moves after every move, and limiting the chec
 
 \subsection{Maintain Virtual Connection}
 
-Maintaining virtual connections is important, as chains of virtual connections can form frames that, when completed, form a winning condition. If an opponent places a stone in one of the two parts of a VC, the response should be to reply in the remaining empty position that used to form the VC. This can be implemented with a small state machine looking at the neighbours to the last placed stone, looking for the pattern of your stone, empty, your stone. If this pattern is found, the empty cell between your two stones is the correct response to maintain the virtual connection. Maintaining a connection to an edge is also important, so the pattern still works if either of your stones is off the edge of the board, as in your stone, empty, off the board. This pattern is checked after every move. If no pattern is found, then the default policy is used, resulting in a random move being chosen.
+Maintaining virtual connections is important, as chains of virtual connections can form frames that, when completed, form a winning condition. If an opponent places a stone in one of the two parts of a VC, the response should be to play in the remaining empty position that used to form the VC. This can be implemented with a small state machine looking at the neighbours of the last placed stone, looking for the pattern of your stone, empty, your stone. If this pattern is found, the empty cell between your two stones is the correct response to maintain the virtual connection. Maintaining a connection to an edge is also important, so the pattern still works if either of your stones is off the edge of the board, as in your stone, empty, off the board. This pattern is checked after every move. If no pattern is found, then the default policy is used, resulting in a random move being chosen.
 
 Looking for this pattern is extremely fast, causing no slowdown in terms of simulations per second. The time taken for the pattern lookup is offset by the approximately 10\% shorter rollouts. The results are shown in Figure \ref{fig:maintainvcrollout}, showing a negligible or even negative result.
 
@@ -624,7 +752,7 @@ Last Good Reply (LGR) is a game-independent method of improving the moves in a r
 
 LGR only saves the replies to individual moves. If a good reply is known to the opponent's last move, it is made instead of a random move. If that move is invalid, a random move is made instead.
 
-If a reply was played, but the outcome of the rollout is a loss, that may not be such a good move, and so it should be forgotten. This variant, called Last Good Reply with Forgetting (LGRF) removes the replies for all the moves made by the losing player. This increases the amount of randomness in the rollouts as compared to LGR.
+If a reply was played, but the outcome of the rollout is a loss, that may not be such a good move, and so it should be forgotten. This variant, called Last Good Reply with Forgetting (LGRF), removes the replies for all the moves made by the losing player. This increases the amount of randomness in the rollouts as compared to LGR.
 
 Figure \ref{fig:lgr} shows the results. LGR only works on size 4, while LGRF is helpful on sizes 6 and up, leading to a 50-100 elo performance gain.
 
@@ -748,7 +876,7 @@ The results are shown in Figure \ref{fig:ringignore}. There are minor successes 
 	\label{fig:ringdepth}
 \end{figure}
 
-Table \ref{tab:wintypedepth} shows the number of moves before each win condition is achieved, showing that rings occur the earliest, especially on big boards. This is expected due to their smaller size and being local properites. If instead of ignoring all rings, we allow rings for the first part of the rollout and ignore all rings after that cutoff, we may allow legitimate ring threats while ignoring rings that occur purely due to randomness. As the board size increases, this depth should also be increased, so instead of an absolute value, we use a fraction of the number of empty cells on the board at the beginning of the rollout.
+Table \ref{tab:wintypedepth} shows the number of moves before each win condition is achieved, showing that rings occur the earliest, especially on big boards. This is expected due to their smaller size and being local properties. If instead of ignoring all rings, we allow rings for the first part of the rollout and ignore all rings after that cutoff, we may allow legitimate ring threats while ignoring rings that occur purely due to randomness. As the board size increases, this depth should also be increased, so instead of an absolute value, we use a fraction of the number of empty cells on the board at the beginning of the rollout.
 
 The results are shown in Figure \ref{fig:ringdepth}, showing results as high as a 71\% winning rate for only considering rings until 70\% of the empty cells are played. The benefits on board sizes 8, 9 and 10 are still quite small though, where the problem is the worst.
 
@@ -782,7 +910,7 @@ The results are shown in Figure \ref{fig:ringdepth}, showing results as high as 
 	\label{fig:ringsize}
 \end{figure}
 
-The most commonly occuring ring  is the simple size 6 ring, which is easy to block. We may want to allow larger rings while still ignoring the easy to block 6 ring. Using the search-based ring check described in Section \ref{sec:ringimpl}, we can ignore rings smaller than a minimum value. In this test we start by allowing all rings, and after every N moves, we increase the minimum size by 1 for variable N. After the first N this would imply only rings of size 7 or bigger, then 8 or bigger, etc. Here we set N as a fraction of the remaining empty cells.
+The most commonly occurring ring  is the simple size 6 ring, which is easy to block. We may want to allow larger rings while still ignoring the easy to block 6 ring. Using the search-based ring check described in Section \ref{sec:ringimpl}, we can ignore rings smaller than a minimum value. In this test we start by allowing all rings, and after every N moves, we increase the minimum size by 1 for variable N. After the first N this would imply only rings of size 7 or bigger, then 8 or bigger, etc. Here we set N as a fraction of the remaining empty cells.
 
 The results are shown in Figure \ref{fig:ringsize}, again showing reasonable results on board sizes 5 and 6 with a winning rate of 60\%, but failing to show any improvement on larger board sizes. A fraction of 0.7 or 0.9 is so high that it never reaches a minimum size bigger than 7, though this is enough to ignore size 6 rings.
 
@@ -839,7 +967,11 @@ The results of using this feature when requiring a minimum of 3 permanent stones
 To show that these features combine, all of the features that showed positive results were combined into a single test case, and then single features were removed. All of these test cases were then tested against the same RAVE baseline as all the other tests were tested against. The heuristic knowledge features and rollout policy features are shown in separate graphs for clarity, but the test case marked `All' is identical on these two graphs.
 
 The heuristic knowledge features that were included are:
+\vspace{-5mm}
 \begin{itemize}
+	\setlength{\itemsep}{0pt}
+	\setlength{\parskip}{0pt}
+	\setlength{\parsep}{0pt}
 \item Maintain Virtual Connections (value 100)
 \item Connectivity (value 20)
 \item Locality (value 3)
@@ -849,7 +981,11 @@ The heuristic knowledge features that were included are:
 \end{itemize}
 
 The rollout policy features that were included are:
+\vspace{-5mm}
 \begin{itemize}
+	\setlength{\itemsep}{0pt}
+	\setlength{\parskip}{0pt}
+	\setlength{\parsep}{0pt}
 \item Multiple rollouts (5 rollouts per simulation)
 \item Mate-in-one (Only for the first N moves where N is the board size)
 \item Ring Rule Depth (Only allow rings until 70\% of empty cells are filled)

@@ -4,7 +4,7 @@
 Here are general game playing concepts and definitions:
 
 \begin{description}
-\item[Anytime algorithm] An anytime algorithm can return an answer at any point of execution, but continues to run to provide a more accurate and potentially better answer.
+\item[Anytime Algorithm] An anytime algorithm can return an answer at any point of execution, but continues to run to provide a more accurate and potentially better answer.
 \item[Best-First Search] In a best-first search nodes are explored in order of their heuristic value. Promising nodes are explored before less promising nodes. This is very memory intensive as all nodes explored to date must be kept in memory.
 \item[Branching Factor] is the average number of moves available to each player. This depends on the rules of the game, board size, pieces in play and the stage of the game. This can be as low as one for forced moves, or very high, such as in the hundreds or thousands for Amazons or Arimaa.
 \item[Breadth-First Search] In a breadth-first search, all nodes at a specific depth will be considered before any nodes at a deeper depth, in increasing depth. This can be very memory intensive as all nodes up to the specified depth are usually kept in memory.
@@ -20,14 +20,15 @@ Here are general game playing concepts and definitions:
 \item[Minimax Backup] Given a node N whose children all have known values, N's value is equal to the value of the most favourable child for the current player.
 \item[Minimax Value] The value of a node given that both players play perfectly according to Minimax.
 \item[Move] A move is a distinct action by one of the players leading from one state to another state. In games with multi-part moves, such as Amazons where each move consists of a movement plus shooting an arrow, the pair of actions would be considered a single move. There are usually multiple moves available from each state, but usually only one can be chosen per turn.
-\item[Node Value] Each node has an associated outcome or expected outcome associated with it. Terminal positions are positions where one of the players has won or it is a draw, have an exact value such as win, loss or draw, or a score to show how much a player won by.
+\item[Node Value] Each node has an outcome or expected outcome associated with it. Terminal positions have an exact value, whereas non-terminal positions have an expected or heuristic value.
 \item[Perfect Information] A game has the property of perfect information when both players know the full state of the game.
-\item[Ply] A move or turn. A search depth of 4-ply means looking at all possible paths that are 4 moves deep.
+\item[Ply] A move or turn by a single player. A search depth of 4-ply means looking at all possible paths that are 4 moves deep.
 \item[Ponder] Thinking during your opponent's time.
 \item[Root Node] The root node is the highest node in the tree. It has no parents, and there is exactly one of them in any tree.
 \item[State] A state is a full description of a board position. It includes the locations of all the pieces, and any other relevant information. In Chess, the state would include whether each king can castle, and whether a pawn can capture \textit{en passant}. In games where repeated moves are not allowed, the full game history may be included in the state. Occasionally a simplified version of the state is used when speed is more important than accuracy.
 \item[State Space] The state space is the number of unique reachable states in the game.
 \item[Stochastic] A game is stochastic if it has elements of randomness, such as dice rolls. Backgammon is stochastic while Chess, Hex and Havannah are not.
+\item[Terminal Position] A terminal positions is a position where one of the players has won or it is a draw. They have an exact value such as win, loss or draw, or a score to show how much a player won by.
 \item[Transposition] One state with multiple histories. If moves A-X-B leads to the same position as B-X-A, they are transpositions. They are the same state, so they will have the same minimax value (subject to history), and should not be searched twice.
 \item[Zero Sum Games] A zero sum game has the property that one player's gain is the other player's loss. A draw is still possible, but no move can help both players, so there is no incentive to cooperate.
 \item[Zobrist Hash] A hash value that is built up incrementally by XORing a random string associated with each move against a previous hash value.
