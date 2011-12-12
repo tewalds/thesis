@@ -24,9 +24,9 @@ Havannah is a connection game invented in 1979 by Christian Freeling. It is a tw
 	\item A \textit{Ring} is a group of stones that surround at least one cell (which can be empty or filled by either player), for example the stones labelled $\mathcal R$ in Figure \ref{fig:rules}.
 \end{itemize}
 
-The \textit{size} of the board is defined as the number of cells along one edge, so the board in Figure \ref{fig:rules} is size 6. Havannah can be played on any size board, but is usually played on boards ranging from size 4 to size 10. Stronger players prefer bigger boards, due to the larger component of strategy compared to the small boards where tactics dominate. In 2002, Christian Freeling offered \euro 1000 for any program that beats him in just one in ten games on size 10 by 2012.
+The \textit{size} of the board is defined as the number of cells along one edge, so the board in Figure \ref{fig:rules} is size 6. A board of size $n$ has $3n(n-1) + 1 = 3n^2 - 3n + 1$ cells, as listed in Table \ref{table:complexity}. Havannah can be played on any size board, but is usually played on boards ranging from size 4 to size 10. Stronger players prefer bigger boards, due to the larger component of strategy compared to the small boards where tactics dominate. In 2002, Christian Freeling offered \euro 1000 for any program that beats him in just one in ten games on size 10 by 2012.
 
-Havannah is played by a few thousand players around the world, primarily on Little Golem\footnote{\url{http://littlegolem.net}} and similar sites. It is also played by computer programs at the International Computer Games Association annual Computer Olympiads.\footnote{\url{http://www.grappa.univ-lille3.fr/icga/}}
+Havannah is played by a few thousand players around the world, primarily on Little Golem\footnote{\url{http://littlegolem.net}} and similar sites. It is also played by computer programs at the International Computer Games Association (ICGA) annual Computer Olympiads.\footnote{\url{http://www.grappa.univ-lille3.fr/icga/}}
 
 
 
@@ -77,7 +77,7 @@ Several coordinate systems for specifying board locations exist. The one that wi
 \end{figure}
 
 
-\section{State Space}
+\section{State Space}\label{sec:statespace}
 
 A crude overestimation of the number of Havannah states is $T_0(n) = 3^n$ where $n$ is the number of cells on the board. This includes many states that are unreachable purely based on the players having an uneven number of moves, such as all cells being played by player 1. A more accurate estimate is the sum of states where both players have made equal number of moves plus the sum of all states where player 1 has made one more move. This can be expressed as the formula:
 $$T_1(n) = \sum_{i = 0}^{(n-1)/2} {n \choose i}*{n-i \choose i} + {n \choose i + 1}*{n - i - 1 \choose i}$$

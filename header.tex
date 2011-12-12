@@ -32,9 +32,7 @@ The author reserves all other publication and other rights in association with t
      \supervisor, \; \superloc \\ \\
      \coma, \; \loca \\ \\
      \comb, \; \locb \\ \\
-     \comc, \; \locc \\ \\
-     \comd, \; \locd \\ \\
-     \come, \; \loce
+     \comc, \; \locc
 
 
   % Dedication
@@ -54,7 +52,7 @@ The author reserves all other publication and other rights in association with t
   \renewcommand{\baselinestretch}{1.8}
   \normalsize{
 
-Havannah is a recent game that is interesting from an AI research perspective. Some of its properties, including virtual connections, frames, dead cells and draws are explained. Monte Carlo Tree Search (MCTS) is well suited to play Havannah, but the playing strength can be improved by using heuristic knowledge and a modified rollout policy. A change to the rules in the rollout policy significantly improves play. Combined with several Havannah specific heuristics, a greater than 80\% winning rate, or 300 elo gain, is achieved on all board sizes over an already fairly strong player. This MCTS player is augmented with a few engineering improvements and then used to solve all 6 openings of size 4 Havannah, a game with a state space on the order of $6 \times 10^{15}$ states. Castro, the implementation and test bed, is released open source.
+Havannah is a recent game that is interesting from an AI research perspective. Some of its properties, including virtual connections, frames, dead cells, draws and races to win, are explained. Monte Carlo Tree Search (MCTS) is well suited to play Havannah, but many improvements are possible. Several forms of heuristic knowledge in the tree show playing strength gains, and a change to the rules in the rollout policy significantly improves play on larger board sizes. Together, a greater than 80\% winning rate, or 300 elo gain, is achieved on all board sizes over an already fairly strong player. This MCTS player is augmented with a few engineering improvements, such as threading, memory management and early draw detection, and then used to solve all 6 openings of size 4 Havannah, a game with a state space on the order of $6 \times 10^{15}$ states. Castro, the implementation and test bed, is released open source.
 
   }
 
