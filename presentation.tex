@@ -7,6 +7,8 @@
 \usetheme{default}
 \useoutertheme{infolines}
 
+%for the euro symbol
+\usepackage[gen]{eurosym}
 
 \usepackage{tikz}
 \usepackage{pgfplots}
@@ -73,13 +75,19 @@
 \AtBeginSection[] % Do nothing for \section*
 {
 \begin{frame}{Outline}
-\tableofcontents[currentsection, hideothersubsections]
+\tableofcontents[currentsection]%, hideothersubsections]
 \end{frame}
 }
 
+\AtBeginSubsection[] % Do nothing for \section*
+{
+\begin{frame}{Outline}
+\tableofcontents[currentsection, currentsubsection]%, hideothersubsections]
+\end{frame}
+}
 
 \begin{frame}{Outline}
-\tableofcontents[hideallsubsections]
+\tableofcontents%[hideallsubsections]
 \end{frame}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -88,18 +96,23 @@
 
 \begin{frame}{Motivation}
 \begin{itemize}
-	\item Artificial Intelligence (AI) is important
-	\item Search is an important technique for AI
-	\item Havannah is a good testcase for search
+	\item Artificial intelligence is important research topic
+	\item Search is an important technique for artificial intelligence
+	\item Havannah is a good test case for search, no known good evaluation function
+	\item Christian Freeling, creator of Havannah, placed a \euro 1000 wager that no program would beat him in even 1 out of 10 games on size 10 by 2012
+	\item Goal: Develop a program that plays strong Havannah on board sizes 4 through 10, and to use this player to solve all 6 openings of the size 4 board.
 \end{itemize}
 \end{frame}
 
 \begin{frame}{Contributions}
 \begin{itemize}
-	\item Castro, open source
-	\item Strong player
-	\item Strong solver
-	\item TODO ...
+	\item Castro, the Havannah strong player and solver is released open source \url{https://github.com/tewalds/castro/}
+	\item Several properties of Havannah are enumerated: virtual connections, frames, races to win, dead cells and draws
+	\item Many heuristics are tested as knowledge and in rollouts, on 7  board sizes
+	\item Ring Rule variations improve play on larger board sizes
+	\item The combination of features gives an 80\% winning rate or 300 elo improvement over an already strong player
+	\item Monte-Carlo Tree Search is shown to be a strong solver with some engineering improvements: threading, memory management and early draw detection
+	\item The solution to all 6 openings of size 4 are shown
 \end{itemize}
 \end{frame}
 
@@ -270,6 +283,7 @@
 
 \begin{frame}{RAVE}
 \begin{itemize}
+	\item Rapid Action Value Estimate
 	\item A win in a rollout is composed of several good moves
 	\item Moves that do well in rollouts are likely good if played earlier
 	\item Winning rate for each move in rollouts can be tracked and combined with real experience: $$ \beta*n_i.v + (1-\beta)*n_i.r $$
@@ -306,7 +320,7 @@
 
 \section{Havannah}
 
-\subsection{Rules of Havannah}
+\subsection{Rules and State Space of Havannah}
 
 \begin{frame}{Rules of Havannah}
 \begin{columns}
@@ -334,9 +348,6 @@
 \end{columns}
 \end{frame}
 
-%\subsection{Coordinate System}
-
-\subsection{State Space}
 
 \begin{frame}{State Space}
 \begin{table}
@@ -360,8 +371,6 @@
 \subsection{Properties of Havannah}
 
 
-%\subsubsection{Virtual Connections}
-
 \begin{frame}{Virtual Connections}
 \begin{figure}
 	\centering
@@ -373,6 +382,9 @@
 	\end{HexBoard}
 	\caption{A simple virtual connection}
 \end{figure}
+\begin{itemize}
+\item A second player strategy for connecting two groups/cells
+\end{itemize}
 \end{frame}
 
 
@@ -402,8 +414,6 @@
 }
 \end{frame}
 
-
-%\subsubsection{Frame}
 
 \begin{frame}{Frames, Race to Win}
 \begin{figure}
@@ -440,9 +450,6 @@
 }
 \end{frame}
 
-%\subsubsection{Dead Cells}
-
-%\subsubsection{Draws}
 
 \begin{frame}{Draws}
 \only<1>{
@@ -480,15 +487,15 @@
 
 \section{Playing Havannah}
 
-\subsection{Castro}
+\subsection{Castro, Testing Methedology}
 
 \begin{frame}{Castro}
 \begin{itemize}
 \item Strong Havannah player, won ICGA Havannah tournament in 2010 and 2011
 \item Written in C++
 \item Open source: \url{https://github.com/tewalds/castro/}
-\item Monte-Carlo Tree Search player
-\item Solvers: Alpha-beta, proof number search
+\item Player: Monte-Carlo Tree Search
+\item Solvers: Alpha-beta, Proof Number Search
 \end{itemize}
 \end{frame}
 
@@ -536,7 +543,7 @@
 
 \end{frame}
 
-\subsection{Testing Methedology}
+%\subsection{Testing Methedology}
 
 \begin{frame}{Testing Methedology}
 \begin{itemize}
@@ -865,6 +872,21 @@
 	\centering
 	\begin{HavannahBoard}[board size=4,coordinate style=classical,show coordinates=false]
 	\HGame[numbered moves=false]{a4,g4,a1,b3,g7,d1,d7,f3,e2,d2}
+%	\HStoneGroup[color=light gray,label=1]{}
+%	\HStoneGroup[color=light gray,label=2]{a2,a3,b5,c6,e7,f7}
+%	\HStoneGroup[color=light gray,label=3]{b1,b2,b4,c5,d6,e6,f6,g6}
+%	\HStoneGroup[color=light gray,label=4]{c3,c4,d5,e5}
+%	\HStoneGroup[color=light gray,label=5]{c1,c2,d4,f5,g5}
+%	\HStoneGroup[color=light gray,label=6]{d3,e3,e4,f4}
+	\end{HavannahBoard}
+	\caption{Distance to a Win board}
+\end{figure}
+}
+\only<2>{
+\begin{figure}
+	\centering
+	\begin{HavannahBoard}[board size=4,coordinate style=classical,show coordinates=false]
+	\HGame[numbered moves=false]{a4,g4,a1,b3,g7,d1,d7,f3,e2,d2}
 	\HStoneGroup[color=light gray,label=1]{}
 	\HStoneGroup[color=light gray,label=2]{a2,a3,b5,c6,e7,f7}
 	\HStoneGroup[color=light gray,label=3]{b1,b2,b4,c5,d6,e6,f6,g6}
@@ -875,7 +897,7 @@
 	\caption{Distance to a Win for White}
 \end{figure}
 }
-\only<2>{
+\only<3>{
 \begin{figure}
 	\centering
 	\begin{HavannahBoard}[board size=4,coordinate style=classical,show coordinates=false]
@@ -890,7 +912,7 @@
 	\caption{Distance to a Win for Black}
 \end{figure}
 }
-\only<3>{
+\only<4>{
 \begin{figure}
 	\centering
 	\begin{HavannahBoard}[board size=4,coordinate style=classical,show coordinates=false]
@@ -1288,6 +1310,8 @@
 
 \section{Solving Havannah}
 
+\subsection{Engineering Improvements}
+
 \begin{frame}{Symmetry}
 \begin{itemize}
 \item Only 6 of the 37 cells on an empty size 4 board are unique
@@ -1299,7 +1323,7 @@
 \end{itemize}
 \end{frame}
 
-\subsection{Multi-threading}
+%\subsection{Multi-threading}
 
 \begin{frame}{Multi-threading}
 \begin{itemize}
@@ -1313,7 +1337,7 @@
 \end{itemize}
 \end{frame}
 
-\subsection{Memory Management}
+%\subsection{Memory Management}
 
 \begin{frame}{Garbage Collection}
 \begin{itemize}
@@ -1335,7 +1359,7 @@
 \end{itemize}
 \end{frame}
 
-\subsection{Draw Detection}
+%\subsection{Draw Detection}
 
 
 \begin{frame}{Draw Detection}
@@ -1368,12 +1392,10 @@
 \begin{frame}{Solution to Sizes 2 and 3}
 \begin{figure}[tb]
 \centering
-
 	\begin{HavannahBoard}[board size=2,coordinate style=classical,show coordinates=false]
 	\HStoneGroup[color=white]{a1,a2,b1,b3,c2,c3}
 	\HStoneGroup[color=black]{b2}
 	\end{HavannahBoard}
-
 	\begin{HavannahBoard}[board size=3,coordinate style=classical,show coordinates=false]
 	\HStoneGroup[color=white]{a1,a3,c1,c5,e3,e5}
 	\HStoneGroup[color=black]{a2,b1,b2,b3,b4,c2,c3,c4,d2,d3,d4,d5,e4}
@@ -1416,34 +1438,39 @@
 
 \section{Conclusion}
 
-\subsection{Conclusion}
+%\subsection{Conclusion}
 
 \begin{frame}{Conclusion}
 \begin{itemize}
-\item
-\item
-\item
-\item
-\item
-\item
+	\item Castro, the Havannah strong player and solver is released open source \url{https://github.com/tewalds/castro/}
+	\item Several properties of Havannah are enumerated: virtual connections, frames, races to win, dead cells and draws
+	\item Many heuristics are tested as knowledge and in rollouts, on 7  board sizes
+	\item Ring Rule variations improve play on larger board sizes
+	\item The combination of features gives an 80\% winning rate or 300 elo improvement over an already strong player
+	\item Castro is stronger than humans on small board sizes, and mediocre on big board sizes
+	\item Monte-Carlo Tree Search is shown to be a strong solver with some engineering improvements: threading, memory management and early draw detection
+	\item The solution to all 6 openings of size 4 are shown
 \end{itemize}
 \end{frame}
 
-\subsection{Future Work}
+%\subsection{Future Work}
 
 \begin{frame}{Future Work}
 \begin{itemize}
-\item
-\item
-\item
-\item
-\item
-\item
+\item Learn patterns and features in a more automated way, such as machine learning, instead of large scale parameter tuning
+\item Take frames and their distance to win into account in a more accurate way
+\item Use a transposition table instead of a tree
+\item Test proof number search in conjunction with MCTS and as a player in its own right
+\item Try solving uneven board sizes such as $4x4x5$
 \end{itemize}
 \end{frame}
 
 
 \begin{frame}{Questions?}
+\begin{center}
+\Huge
+Questions?
+\end{center}
 \end{frame}
 
 
