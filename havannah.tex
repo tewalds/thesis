@@ -90,7 +90,7 @@ The state space complexity of Havannah is shown in Table \ref{table:complexity},
 	\begin{tabular}{lrr|lrc}
 	Havannah  & Cells & States $(T_2)$      & Game       & States     & Ref \\ \hline
 	*Size 3   &    19 & $2 \times 10^{7}$   & *Connect 4 & $10^{14}$  & \cite{trompconnect4} \\
-	*Size 4   &    37 & $6 \times 10^{15}$  & *Checkers  & $10^{20}$  & \cite{schaeffer1998solving}\\
+	*Size 4   &    37 & $6 \times 10^{15}$  & *Checkers  & $10^{20}$  & \cite{schaeffer2007checkers}\\
 	Size 5    &    61 & $1 \times 10^{27}$  & *Hex 8x8   & $10^{29}$  & \cite{henderson2009solving} $T_1(8^2)/2$\\
 	Size 6    &    91 & $2 \times 10^{41}$  & Go 9x9     & $10^{38}$  & \cite{tromp2007combinatorics}\\
 	Size 7    &   127 & $3 \times 10^{58}$  & Chess      & $10^{46}$  & \cite{tromp2010chess}\\
@@ -264,7 +264,7 @@ Unfortunately the Hex-dead cell patterns don't apply in Havannah, because the He
 \draw [thick]    (b1) -- (c1) -- (d2) -- (d3) -- (c3) -- (b2) -- (b1);
 \end{HavannahBoard}
 \end{tabular}
-	\caption[Hex-dead Cells are not Havannah-dead Cells]{Hex-dead Cells are not Havannah-dead Cells. Starting with the Hex-dead cell pattern on the left, and adding stones 1-4 leads to the ring on the right which intersects the Hex-dead cell}
+	\caption[Hex-dead Cells Are Not Havannah-dead Cells]{Hex-dead Cells Are Not Havannah-dead Cells. Starting with the Hex-dead cell pattern on the left, and adding stones 1-4 leads to the ring on the right which intersects the Hex-dead cell}
 	\label{fig:ringdeadcells}
 \end{figure}
 
@@ -315,7 +315,7 @@ Note that if the ring is made bigger than a simple 6-ring, any ring that uses th
 
 \subsection{Draws}
 
-Unlike Hex, where a filled board must have a winner, draws are possible in Havannah. Figure \ref{fig:drawfilled} shows a filled board of a game that ended in a draw. Backing up a few moves we see in Figure \ref{fig:drawnowin} that after move 30 no wins are possible even if one of the players were to pass all their remaining moves. The game can be proven as a draw at least as early as move 20, shown in Figure \ref{fig:drawproven}. Draws are possible on all board sizes above 3. They occur occasionally on size 4, but are rare on size 5 and above. Section \ref{sec:drawdetect} will describe a technique for detecting draws once no wins are possible.
+Unlike Hex, where a filled board must have a winner, draws are possible in Havannah. Figure \ref{fig:drawfilled} shows a filled board of a game that ended in a draw. Backing up a few moves we see in Figure \ref{fig:drawnowin} that after move 31 no wins are possible even if one of the players were to pass all their remaining moves. The game can be proven as a draw at least as early as move 20, shown in Figure \ref{fig:drawproven}. Draws are possible on all board sizes above 3. They occur occasionally on size 4, but are rare on size 5 and above. Section \ref{sec:drawdetect} will describe a technique for detecting draws once no wins are possible.
 
 \begin{figure}
 	\centering
@@ -335,7 +335,7 @@ Unlike Hex, where a filled board must have a winner, draws are possible in Havan
 		\HGame{g7,a1,f5,g4,e3,d2,e2,d1,c2,d3,c3,f7,d6,b4,a4,b5,a3,e5,c4,b3}%, a2,c1,b1,f6,e4,d4,g6,e7,d7,b2,c5}
 		\end{HavannahBoard}
 	}
-	\caption[Havannah Draws]{(a) Filled board ending as a draw. (b) After move 30 no wins are possible. (c) Proven draw after move 20.}
+	\caption[Havannah Draws]{(a) Filled board ending as a draw. (b) After move 31 no wins are possible. (c) Proven draw after move 20.}
 	\label{fig:draw}
 \end{figure}
 

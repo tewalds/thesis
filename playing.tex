@@ -10,7 +10,7 @@ Castro is a strong Havannah program written by the author of this thesis, and re
 
 Castro includes an alpha-beta solver with iterative deepening and an optional transposition table. This alpha-beta solver is not useful as a player, as it lacks a heuristic evaluation of non-terminal nodes. It is the fastest of the solvers in terms of positions evaluated per second, but is rarely the fastest to solve non-trivial positions.
 
-Castro includes three proof number search (PNS) solvers. The basic PNS solver is single-threaded and uses a tree data structure similar to the one described in Section \ref{sec:memory}. The second PNS solver is multi-threaded but uses the same tree data structure and includes garbage collection similar to Section \ref{sec:gc}. The third PNS solver is single-threaded but uses a transposition table instead of a tree. All three PNS solvers optionally use depth-first thresholds\cite{nagai1999-DFPN} as well as the $1+\epsilon$ trick\cite{pawlewicz2007epsilon}. They also use a 2-ply lookahead, similar to Section \ref{sec:proofbackups}. The tree based solvers can optionally use the distance to win heuristic described in Section \ref{sec:distwin}, while the transposition table based solver can attempt to copy a proof to its siblings. The multi-threaded version could easily be turned into a player, but this has not been done yet.
+Castro includes three proof number search (PNS) solvers. The basic PNS solver is single-threaded and uses a tree data structure similar to the one described in Section \ref{sec:memory}. The second PNS solver is multi-threaded but uses the same tree data structure and includes garbage collection similar to Section \ref{sec:gc}. The third PNS solver is single-threaded but uses a transposition table instead of a tree. All three PNS solvers optionally use depth-first thresholds\cite{nagai2002dfpn} as well as the $1+\epsilon$ trick\cite{pawlewicz2007epsilon}. They also use a 2-ply lookahead, similar to Section \ref{sec:proofbackups}. The tree based solvers can optionally use the distance to win heuristic described in Section \ref{sec:distwin}, while the transposition table based solver can attempt to copy a proof to its siblings. The multi-threaded version could easily be turned into a player, but this has not been done yet.
 
 
 \section{Havannah Rules Implementation}\label{sec:impl}
@@ -235,7 +235,7 @@ MCTS builds a large tree with real experience, and then makes a move. Most of th
 	\HStoneGroup[color=white]{b1,a2}
 	\HStoneGroup[color=black]{d2,e4}
 	\end{HavannahBoard}
-	\caption{Early Position Solvable by MCTS in 1 Minute, white to play}
+	\caption[Early Position Solvable by MCTS in 1 Minute]{Early Position Solvable by MCTS in 1 Minute, white to play}
 	\label{fig:lorentzproof}
 \end{figure}
 
@@ -258,7 +258,7 @@ MCTS builds a large tree with real experience, and then makes a move. Most of th
 %\addplot coordinates { (4,10.85) (5,27.61) (6,28.09) (7,18.90) (8,13.37) (9,15.01) (10,12.68) }; \addlegendentry{Disabled}
 \end{axis}
 \end{tikzpicture}
-	\caption{RAVE Baseline with 2-ply lookahead during expansion vs 1-ply lookahead and no lookahead}
+	\caption[Proof Backups]{RAVE Baseline with 2-ply lookahead during expansion vs 1-ply lookahead and no lookahead}
 	\label{fig:proofbackups}
 \end{figure}
 
@@ -350,7 +350,7 @@ The experience from the rollouts are aggregated before the back-propagation phas
 
 \section{Heuristic Knowledge}\label{sec:knowledge}
 
-Heuristic knowledge was described in section \ref{sec:heuristicknowledge} as a way to bias the descent policy towards moves that are likely to be good before any experience has been gained. Castro implements an extra additive knowledge term using the formula: $$\frac{n_i.k}{\sqrt{n_i.n}}$$ This gives a boost to the node that is independent of the exploration bonus from UCT and independent of the $\beta$ value for RAVE. Each heuristic has some small value, which is multiplied by a tuning constant. The different heuristic values are summed for the final knowledge value for that move.
+Heuristic knowledge was described in section \ref{sec:heuristicknowledge} as a way to bias the descent policy towards moves that are likely to be good before any experience has been gained. Castro implements an extra additive knowledge term using the formula: $$\frac{n_i.k}{\sqrt{n_i.n}}$$ This gives a boost to the node that is independent of the exploration bonus from UCT and independent of the $\beta$ value for RAVE. Each heuristic has some small value, which is multiplied by a tuning constant. The different heuristic values are summed for the final knowledge value $n_i.k$ for that node.
 
 
 \subsection{Maintain Virtual Connections}
@@ -597,7 +597,7 @@ Most Havannah games end in either a bridge or a fork victory. It is possible to 
 		\HStoneGroup[color=light gray,label=4]{c3,c4,d4,d5,e5,f5}
 		\end{HavannahBoard}
 	}
-	\caption{Distance to a Win for (a) White (b) Black (c) Minimum of White and Black}
+	\caption[Distance to Win]{Distance to a Win for (a) White (b) Black (c) Minimum of White and Black}
 	\label{fig:distances}
 \end{figure}
 

@@ -19,8 +19,8 @@
     anchor=north west,
     font=\tiny, %\footnotesize,
   },
-  width=10cm,
-  height=6cm,
+  width=9cm,
+  height=5cm,
 }
 
 \usepackage{hyperref}
@@ -50,37 +50,14 @@
 	\titlepage
 \end{frame}
 
-%\begin{frame}
-%\begin{center}
-%\Huge
-%Playing and Solving Havannah
-%\vspace{30pt}
-%\huge
-%Timo Ewalds
-%\end{center}
-%\end{frame}
 
-%\begin{frame}{Overview}
-%\begin{itemize}
-%	\item Goal: Create a strong Havannah player, and solve boardsize 4
-%	\item Background
-%	\item Rules and Properties of Havannah
-%	\item Playing Havannah
-%	\item Solving Havannah
-%	\item Conclusion
-%\end{itemize}
-%\end{frame}
-
-
-\AtBeginSection[] % Do nothing for \section*
-{
+\AtBeginSection[]{
 \begin{frame}{Outline}
 \tableofcontents[currentsection]%, hideothersubsections]
 \end{frame}
 }
 
-\AtBeginSubsection[] % Do nothing for \section*
-{
+\AtBeginSubsection[]{
 \begin{frame}{Outline}
 \tableofcontents[currentsection, currentsubsection]%, hideothersubsections]
 \end{frame}
@@ -108,7 +85,7 @@
 \begin{itemize}
 	\item Castro, the Havannah strong player and solver is released open source \url{https://github.com/tewalds/castro/}
 	\item Several properties of Havannah are enumerated: virtual connections, frames, races to win, dead cells and draws
-	\item Many heuristics are tested as knowledge and in rollouts, on 7  board sizes
+	\item Many heuristics are tested as knowledge and in rollouts, on board sizes 4 through 10
 	\item Ring Rule variations improve play on larger board sizes
 	\item The combination of features gives an 80\% winning rate or 300 elo improvement over an already strong player
 	\item Monte-Carlo Tree Search is shown to be a strong solver with some engineering improvements: threading, memory management and early draw detection
@@ -125,13 +102,13 @@
 \begin{frame}{Minimax}
 \begin{itemize}
 	\item Basis of all game playing programs
-	\item Minimize the maximum value your opponent can achieve.
+	\item Minimize the maximum value your opponent can achieve
+	\item Play the move to which your opponent has the weakest best reply
 \end{itemize}
-
 \begin{figure}
 \centering
 \begin{tikzpicture}[
-	level distance=12mm,
+	level distance=11mm,
 	level 1/.style={sibling distance=55mm},
 	level 2/.style={sibling distance=30mm},
 	level 3/.style={sibling distance=12mm},
@@ -159,15 +136,13 @@
   \draw[thick,->] (f) -- (c);
 \end{tikzpicture}
 \caption[Minimax Tree]{Minimax Tree, squares are MAX nodes, circles are MIN nodes}
-\label{fig:minimaxtree}
 \end{figure}
-
 \end{frame}
 
 \begin{frame}{Alpha-Beta}
 \begin{itemize}
-	\item Maintains two values that bound the minimum value each player is guaranteed given the tree searched so far
-	\item Given perfect move ordering, runs in $O(b^{d/2})$ instead of $O(b^d)$
+	\item Exponentially faster than Minimax, given good move ordering
+	\item Used extensively in games with good heuristics, such as Chess, doesn't work without a heuristic
 	\item Refinements:
 	\begin{itemize}
 		\item Negamax Formulation
@@ -175,7 +150,6 @@
 		\item Iterative Deepening
 		\item History Heuristic
 	\end{itemize}
-	\item Used extensively in games with good heuristics, such as Chess
 \end{itemize}
 \end{frame}
 
@@ -184,69 +158,51 @@
 
 \begin{frame}{Proof Number Search}
 \begin{itemize}
-	\item Best-first search to answer binary questions (solve a position)
-	\item Represented with an AND/OR tree, analogous to MIN/MAX nodes
-	\item Stores a Proof Number (PN) and Disproof Number (DN) for each position
-	\item Most Proving Node (MPN) is a leaf node that, if solved, affects the root's PN or DN
-	\item Continually expands a Most Proving Node
+	\item Commonly used as a solver, little use as a player
 	\item Game/heuristic independent, guided towards parts of the tree where few options need to be solved
 \end{itemize}
+\begin{figure}
+\centering
+\begin{tikzpicture}[
+	level distance=11mm,
+	level 1/.style={sibling distance=55mm},
+	level 2/.style={sibling distance=30mm},
+	level 3/.style={sibling distance=12mm},
+	]
+\node [rectangle,draw] (z){$a \frac{1}{2}$}
+  child {node [circle,draw] {$b \frac{1}{2}$}
+    child {node [rectangle,draw] {$d \frac{0}{\infty}$}
+      child {node [circle,draw,label=below:?] {$h \frac{1}{1}$}}
+      child {node [circle,draw,label=below:win] {$i \frac{0}{\infty}$}}
+    }
+    child {node [rectangle,draw] {$e \frac{1}{2}$}
+      child {node [circle,draw,label=below:?] {$j \frac{1}{1}$}}
+      child {node [circle,draw,label=below:loss] {$k \frac{\infty}{0}$}}
+      child {node [circle,draw,label=below:?] {$l \frac{1}{1}$}}
+    }
+  }
+  child {node [circle,draw] {$c \frac{\infty}{0}$}
+    child {node [rectangle,draw,label=below:loss] {$f \frac{\infty}{0}$}}
+    child {node [rectangle,draw,label=below:?] {$g \frac{1}{1}$}}
+  };
+\end{tikzpicture}
+\caption{Proof Number Search Tree, squares are OR nodes, circles are AND nodes, proof numbers are on top, disproof numbers on the bottom}
+\end{figure}
 \end{frame}
-
-
-\begin{frame}{Proof Number Search}
-\begin{itemize}
-	\item Finds MPN by selecting minimum PN at each OR node, minimum DN at each AND node.
-	\item Expands children, set's PN = 1, DN = 1, or proven/disproven
-	\item Backs up values with formulas: \\
-	For OR nodes: $$ n.pn = \displaystyle\min\limits_{i=0}^k n_i.pn,\quad n.dn = \displaystyle\sum\limits_{i=0}^k n_i.dn $$ For AND nodes: $$ n.pn = \displaystyle\sum\limits_{i=0}^k n_i.pn, \quad n.dn = \displaystyle\min\limits_{i=0}^k n_i.dn $$
-\end{itemize}
-\end{frame}
-
-
-%\begin{frame}{Proof Number Search}
-%\begin{figure}
-%\centering
-%\begin{tikzpicture}[
-%	level distance=15mm,
-%	level 1/.style={sibling distance=60mm},
-%	level 2/.style={sibling distance=35mm},
-%	level 3/.style={sibling distance=15mm},
-%	]
-%\node [rectangle,draw] (z){$a \frac{1}{2}$}
-%  child {node [circle,draw] {$b \frac{1}{2}$}
-%    child {node [rectangle,draw] {$d \frac{0}{\infty}$}
-%      child {node [circle,draw,label=below:?] {$h \frac{1}{1}$}}
-%      child {node [circle,draw,label=below:win] {$i \frac{0}{\infty}$}}
-%    }
-%    child {node [rectangle,draw] {$e \frac{1}{2}$}
-%      child {node [circle,draw,label=below:?] {$j \frac{1}{1}$}}
-%      child {node [circle,draw,label=below:loss] {$k \frac{\infty}{0}$}}
-%      child {node [circle,draw,label=below:?] {$l \frac{1}{1}$}}
-%    }
-%  }
-%  child {node [circle,draw] {$c \frac{\infty}{0}$}
-%    child {node [rectangle,draw,label=below:loss] {$f \frac{\infty}{0}$}}
-%    child {node [rectangle,draw,label=below:?] {$g \frac{1}{1}$}}
-%  };
-%\end{tikzpicture}
-%\caption[Proof Number Search Tree]{Proof Number Search Tree, squares are OR nodes, circles are AND nodes, proof numbers are on top, disproof numbers on the bottom
-%\label{fig:pntree}
-%\end{figure}
-%\end{frame}
 
 
 \subsection{Monte-Carlo Tree Search}
 
 \begin{frame}{Monte-Carlo Tree Search}
+Problem:
 \begin{itemize}
 	\item Alpha-Beta only works for games with a good heuristic evaluation function
-	\item Monte-Carlo evaluation can be used as a rough evaluation
+	\item Proof Number Search only works well for reasonably sized trees and games where good moves can be distinguished by number of available moves high in the tree
+\end{itemize}
+Solution:
+\begin{itemize}
+	\item Monte-Carlo evaluation can be used as a rough evaluation, but uses average replies, not good replies, breaks minimax principle
 	\item Tree search improves the evaluation by finding good replies
-	\item Monte-Carlo Tree Search (MCTS) works well for several games
-	\item MCTS consists of 4 phases: Descent, Expansion, Rollout and Back-propagation, together called a simulation
-	\item MCTS runs simulations until time runs out or the position is solved
-	\item Many extensions and variations to basic MCTS
 \end{itemize}
 \end{frame}
 
@@ -255,64 +211,19 @@
 \begin{figure}
 	\centering
 \includegraphics[width=0.9\textwidth]{mcts.pdf}
-\caption[Four Phases of Monte Carlo Tree Search]{Four Phases of Monte Carlo Tree Search, together called a Simulation, shown in the negamax formulation with a minimum of 3 experience before expansion}
-\label{fig:mcts}
+\caption{Four Phases of Monte Carlo Tree Search, together called a Simulation, shown in the negamax formulation with a minimum of 3 experience before expansion}
 \end{figure}
 \end{frame}
 
 \begin{frame}{Monte-Carlo Tree Search}
 \begin{itemize}
-	\item Many possible node selection policies for the descent phase
-	\item Balance exploration and exploitation
-	\item Use information from rollouts
-	\item Heuristic knowledge
-	\item Rollout Policy
+	\item How to select moves in descent phase: UCT, RAVE, Heuristic Knowledge
+	\item UCT (Upper Confidence bounds as applied to Trees) gives theoretical guarantees about optimality given infinite time, balances exploration and exploitation
+	\item Good move ordering from RAVE and Heuristic Knowledge can help find good replies quicker
+	\item MCTS is dependent on results of rollouts being representative of the strength of a position, can get improved performance with smarter rollouts
 \end{itemize}
 \end{frame}
 
-
-\begin{frame}{UCT}
-\begin{itemize}
-	\item Upper Confidence bounds as applied to Trees (UCT)
-	\item Based on Upper Confidence Bounds (UCB) used for the multi-armed bandit problem
-	\item $ n_i.v + c*\sqrt{\frac{\ln(n.n)}{n_i.n}} $
-	\item Balances exploration vs exploitation in a theoretically optimal way
-\end{itemize}
-\end{frame}
-
-
-\begin{frame}{RAVE}
-\begin{itemize}
-	\item Rapid Action Value Estimate
-	\item A win in a rollout is composed of several good moves
-	\item Moves that do well in rollouts are likely good if played earlier
-	\item Winning rate for each move in rollouts can be tracked and combined with real experience: $$ \beta*n_i.v + (1-\beta)*n_i.r $$
-	\item Phased out as real experience is gained, several possible formulas: $$ \beta = \frac{k}{k+n_i.n} \quad \beta = \frac{n_i.m}{n_i.n+n_i.m+4*n_i.n*n_i.m*b^2}$$
-	\item RAVE often leads to sufficient exploration that UCT exploration term is removed
-\end{itemize}
-\end{frame}
-
-\begin{frame}{Heuristic Knowledge}
-\begin{itemize}
-	\item UCT will find the right move eventually, but heuristics can help
-	\item Uses game specific information to encourage exploration of likely good moves
-	\item Can counteract unlucky randomness in rollouts
-	\item Can be added as fake experience or as a separate term
-	\item Fake experience initializes winning rate to non-zero values
-	\item Separate term adds an exploration bonus: $$\frac{n_i.k}{log(n_i.n)}, \quad \frac{n_i.k}{\sqrt{n_i.n}}, \quad \frac{n_i.k}{n_i.n}$$
-\end{itemize}
-\end{frame}
-
-
-\begin{frame}{Rollout Policy}
-\begin{itemize}
-	\item The strength of MCTS is dependent on the outcome of rollouts being representative of the strength of a position
-	\item More representative if moves are reasonable, even if not great
-	\item Can choose by weighted random with learnt patterns
-	\item Last Good Reply is game independent
-	\item Check for threats and winning moves
-\end{itemize}
-\end{frame}
 
 
 
@@ -326,7 +237,7 @@
 \begin{columns}
 \column{.55\textwidth}
 \begin{center}
-\begin{HavannahBoard}[board size=6,coordinate style=classical]
+\begin{HavannahBoard}[board size=6,coordinate style=classical,show coordinates=false]
 \HStoneGroup[color=black,label=$\mathcal F$]{e10,f10,g10,g9,h9,h8,i8,j8,h7,h6,h5,i5,i4,k8}
 \HStoneGroup[color=white,label=$\mathcal B$]{a1,a2,b3,c3,d4,e4,e3,e2,f2,f1}
 \HStoneGroup[color=gray,label=$\mathcal R$]{e7,e8,d8,c8,b7,b6,b5,c5,d6}
@@ -342,7 +253,7 @@
 	\begin{itemize}
 		\item Bridge ($\mathcal B$), group touches two corners
 		\item Fork ($\mathcal F$), group touches three edges
-		\item Ring ($\mathcal R$), group surrounds some area
+		\item Ring ($\mathcal R$), group surrounds at least one cell
 	\end{itemize}
 \end{itemize}
 \end{columns}
@@ -578,9 +489,12 @@
 \addplot coordinates { (4,76.02) (5,91.42) (6,88.35) (7,81.55) (8,90.71) (9,98.54) (10,99.02) }; \addlegendentry{ 1000}
 \end{axis}
 \end{tikzpicture}
-	\caption{Rave vs UCT Baseline}
+	\caption{RAVE vs UCT Baseline}
 	\label{fig:ravegraph}
 \end{figure}
+\begin{itemize}
+\item Gives over an 80\% win rate (250 elo) on all board sizes.
+\end{itemize}
 \end{frame}
 
 
@@ -620,6 +534,9 @@
 	\caption{RAVE Baseline with 2-ply lookahead during expansion vs 1-ply lookahead and no lookahead}
 	\label{fig:proofbackups}
 \end{figure}
+\begin{itemize}
+\item Gives a 75-90\% win rate (200-300 elo) on all board sizes.
+\end{itemize}
 \end{frame}
 
 
@@ -698,6 +615,9 @@
 	\caption[Multiple Rollouts]{Multiple Rollouts per Simulation Against Baseline RAVE Player}
 	\label{fig:multirollouts}
 \end{figure}
+\begin{itemize}
+\item Gives a 55-65\% win rate (50-100 elo) on sizes 5 and up
+\end{itemize}
 \end{frame}
 
 
@@ -726,6 +646,9 @@
 	\caption[Maintain Virtual Connection Bonus]{Maintain Virtual Connection Bonus Against Baseline RAVE Player}
 	\label{fig:maintainvc}
 \end{figure}
+\begin{itemize}
+\item As high as a 70\% win rate (150 elo), more important against humans.
+\end{itemize}
 \end{frame}
 
 \begin{frame}{Locality}
@@ -752,6 +675,9 @@
 	\caption[Locality Bonus, Any Stones]{Locality Bonus for Playing Near Existing Stones of any Colour Against Baseline RAVE Player}
 	\label{fig:localityany}
 \end{figure}
+\begin{itemize}
+\item Not helpful in general.
+\end{itemize}
 \end{frame}
 
 \begin{frame}{Locality}
@@ -779,6 +705,9 @@
 	\caption[Locality Bonus, Own Stones]{Locality Bonus for Playing Near Stones of the Same Colour Against Baseline RAVE Player}
 	\label{fig:localitysides}
 \end{figure}
+\begin{itemize}
+\item Gives a 65\% win rate (100 elo) on all board sizes.
+\end{itemize}
 \end{frame}
 
 
@@ -806,6 +735,9 @@
 	\caption[Local Reply Bonus]{Local Reply Bonus for Playing Near the Opponent's Last Move Against Baseline RAVE Player}
 	\label{fig:localreply}
 \end{figure}
+\begin{itemize}
+\item Not helpful except on size 4.
+\end{itemize}
 \end{frame}
 
 \begin{frame}{Edge Connectivity}
@@ -834,6 +766,9 @@
 	\caption[Edge Connectivity Bonus]{Edge Connectivity Bonus for Playing Near Groups that are Connected to an Edge or Corner Against Baseline RAVE Player}
 	\label{fig:connectivity}
 \end{figure}
+\begin{itemize}
+\item Gives a 55-65\% win rate (50-100 elo) on all board sizes.
+\end{itemize}
 \end{frame}
 
 \begin{frame}{Group Size}
@@ -864,6 +799,9 @@
 	\caption[Group Size Bonus]{Group Size Bonus for Playing Near or Forming Big Groups Against Baseline RAVE Player}
 	\label{fig:groupsize}
 \end{figure}
+\begin{itemize}
+\item Gives 60-70\% win rate (100 elo) on all board sizes.
+\end{itemize}
 \end{frame}
 
 \begin{frame}{Distance to Win}
@@ -955,6 +893,9 @@
 	\caption[Minimum Distance to Win Bonus]{Minimum Distance to Win Bonus Against Baseline RAVE Player}
 	\label{fig:distancetogether}
 \end{figure}
+\begin{itemize}
+\item As high as a 60\% win rate (50 elo) on size 5, positive up to size 7.
+\end{itemize}
 \end{frame}
 
 \begin{frame}{Distance to Win, Own Side}
@@ -981,6 +922,9 @@
 	\caption[Own Minimum Distance to Win]{Own Minimum Distance to Win Bonus Against Baseline RAVE Player}
 	\label{fig:distancesides}
 \end{figure}
+\begin{itemize}
+\item As high as a 70\% win rate (150 elo), positive up to size 9, probably better with ring rule.
+\end{itemize}
 \end{frame}
 
 
@@ -1007,9 +951,12 @@
 \addplot coordinates { (4,20.00) (5,37.96) (6,32.49) (7,37.41) (8,42.48) (9,33.13) (10,23.49) }; \addlegendentry{all}
 \end{axis}
 \end{tikzpicture}
-	\caption{Mate-in-one Checking Against Baseline RAVE Player With 5 Seconds per Move}
+	\caption{Mate-in-one Checking Against Baseline RAVE Player}
 	\label{fig:mateinone}
 \end{figure}
+\begin{itemize}
+\item Barely positive on size 5, negative elsewhere.
+\end{itemize}
 \end{frame}
 
 \begin{frame}{Maintain Virtual Connections}
@@ -1031,6 +978,9 @@
 	\caption{Maintain Virtual Connections in the Rollout Against Baseline RAVE Player}
 	\label{fig:maintainvcrollout}
 \end{figure}
+\begin{itemize}
+\item Negative on all board sizes, may be better against humans.
+\end{itemize}
 \end{frame}
 
 \begin{frame}{Last Good Reply}
@@ -1053,7 +1003,9 @@
 	\caption{Last Good Reply Against Baseline RAVE Player}
 	\label{fig:lgr}
 \end{figure}
-
+\begin{itemize}
+\item LGR is generally negative, LGRF is as high as 65\% (50-100 elo) on larger boards.
+\end{itemize}
 \end{frame}
 
 \begin{frame}{Ring Rule Variations}
@@ -1095,9 +1047,11 @@
 \addplot coordinates { (4,52.14) (5,54.81) (6,55.56) (7,59.43) (8,46.24) (9,45.56) (10,34.11) }; \addlegendentry{0.80}
 \end{axis}
 \end{tikzpicture}
-	\caption{Ring Rule Ignore Rings Against Baseline RAVE Player}
-	\label{fig:ringignore}
+\caption{Ring Rule Ignore Rings Against Baseline RAVE Player}
 \end{figure}
+\begin{itemize}
+\item Minor success on small boards, fails to defend against rings on big boards.
+\end{itemize}
 \end{frame}
 
 \begin{frame}{Ring Rule: Fixed depth}
@@ -1143,8 +1097,10 @@
 \end{axis}
 \end{tikzpicture}
 	\caption{Ring Rule Fixed Depth Against Baseline RAVE Player}
-	\label{fig:ringdepth}
 \end{figure}
+\begin{itemize}
+\item As high as a 70\% win rate (150 elo) on medium boards, little success on big boards.
+\end{itemize}
 \end{frame}
 
 \begin{frame}{Ring Rule: Ring size}
@@ -1172,8 +1128,10 @@
 \end{axis}
 \end{tikzpicture}
 	\caption{Ring Rule Ring Size Against Baseline RAVE Player}
-	\label{fig:ringsize}
 \end{figure}
+\begin{itemize}
+\item As high as a 60\% win rate (50 elo) on medium boards, little effect on big boards.
+\end{itemize}
 \end{frame}
 
 \begin{frame}{Ring Rule: Permanent stones}
@@ -1197,8 +1155,10 @@
 \end{axis}
 \end{tikzpicture}
 	\caption{Ring Rule Permanent Stones Against Baseline RAVE Player}
-	\label{fig:ringperm}
 \end{figure}
+\begin{itemize}
+\item Gives 60-65\% win rate (100 elo) on all boards, worth even more against humans.
+\end{itemize}
 \end{frame}
 
 \begin{frame}{Ring Rule: Permanent stones}
@@ -1274,8 +1234,10 @@
 \end{axis}
 \end{tikzpicture}
 	\caption{Rollout Modifications}
-	\label{fig:comborollout}
 \end{figure}
+\begin{itemize}
+\item Permanent ring matters the most, Multiple rollouts matters on smaller boards.
+\end{itemize}
 \end{frame}
 
 \begin{frame}{Combination, Knowledge}
@@ -1303,6 +1265,9 @@
 	\caption{Knowledge Modifications}
 	\label{fig:comboknow}
 \end{figure}
+\begin{itemize}
+\item Distance is bad, quite a bit of redundancy here. In general, 80\% improvement on all boards.
+\end{itemize}
 \end{frame}
 
 
@@ -1421,7 +1386,7 @@
 \item Takes about $4 \times 10^{11}$ simulations, or 1 week with 80 cores to solve
 \item Easiest opening takes about 3-12 hours to solve, depending on how lucky it is
 \item Easiest opening confirmed with Proof Number Search, took 80 hours
-\item Proof trees are posted at \url{http://ualberta.ca/~tewalds/}
+\item Proof trees are posted at \url{http://havannah.ewalds.ca/}
 \item Size 4 took $6 \times 10^8$ times more time to solve than size 3, which is roughly the difference in the state space, suggesting size 5 will take $10^{12}$ more effort to solve than size 4.
 \end{itemize}
 \end{frame}
@@ -1444,7 +1409,7 @@
 \begin{itemize}
 	\item Castro, the Havannah strong player and solver is released open source \url{https://github.com/tewalds/castro/}
 	\item Several properties of Havannah are enumerated: virtual connections, frames, races to win, dead cells and draws
-	\item Many heuristics are tested as knowledge and in rollouts, on 7  board sizes
+	\item Many heuristics are tested as knowledge and in rollouts, on board sizes 4 through 10
 	\item Ring Rule variations improve play on larger board sizes
 	\item The combination of features gives an 80\% winning rate or 300 elo improvement over an already strong player
 	\item Castro is stronger than humans on small board sizes, and mediocre on big board sizes
@@ -1472,6 +1437,165 @@
 Questions?
 \end{center}
 \end{frame}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
+\section*{Extra Slides}
+
+\begin{frame}{Alpha-Beta}
+\begin{itemize}
+	\item Maintains two values that bound the minimum value each player is guaranteed given the tree searched so far
+	\item Given perfect move ordering, runs in $O(b^{d/2})$ instead of $O(b^d)$
+	\item Refinements:
+	\begin{itemize}
+		\item Negamax Formulation
+		\item Transposition Table
+		\item Iterative Deepening
+		\item History Heuristic
+	\end{itemize}
+	\item Used extensively in games with good heuristics, such as Chess
+\end{itemize}
+\end{frame}
+
+
+\subsection*{Proof Number Search}
+
+\begin{frame}{Proof Number Search}
+\begin{itemize}
+	\item Best-first search to answer binary questions (solve a position)
+	\item Represented with an AND/OR tree, analogous to MIN/MAX nodes
+	\item Stores a Proof Number (PN) and Disproof Number (DN) for each position
+	\item Most Proving Node (MPN) is a leaf node that, if solved, affects the root's PN or DN
+	\item Continually expands a Most Proving Node
+	\item Game/heuristic independent, guided towards parts of the tree where few options need to be solved
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Proof Number Search}
+\begin{itemize}
+	\item Finds MPN by selecting minimum PN at each OR node, minimum DN at each AND node.
+	\item Expands children, set's PN = 1, DN = 1, or proven/disproven
+	\item Backs up values with formulas: \\
+	For OR nodes: $$ n.pn = \displaystyle\min\limits_{i=0}^k n_i.pn,\quad n.dn = \displaystyle\sum\limits_{i=0}^k n_i.dn $$ For AND nodes: $$ n.pn = \displaystyle\sum\limits_{i=0}^k n_i.pn, \quad n.dn = \displaystyle\min\limits_{i=0}^k n_i.dn $$
+\end{itemize}
+\end{frame}
+
+
+%\begin{frame}{Proof Number Search}
+%\begin{figure}
+%\centering
+%\begin{tikzpicture}[
+%	level distance=15mm,
+%	level 1/.style={sibling distance=60mm},
+%	level 2/.style={sibling distance=35mm},
+%	level 3/.style={sibling distance=15mm},
+%	]
+%\node [rectangle,draw] (z){$a \frac{1}{2}$}
+%  child {node [circle,draw] {$b \frac{1}{2}$}
+%    child {node [rectangle,draw] {$d \frac{0}{\infty}$}
+%      child {node [circle,draw,label=below:?] {$h \frac{1}{1}$}}
+%      child {node [circle,draw,label=below:win] {$i \frac{0}{\infty}$}}
+%    }
+%    child {node [rectangle,draw] {$e \frac{1}{2}$}
+%      child {node [circle,draw,label=below:?] {$j \frac{1}{1}$}}
+%      child {node [circle,draw,label=below:loss] {$k \frac{\infty}{0}$}}
+%      child {node [circle,draw,label=below:?] {$l \frac{1}{1}$}}
+%    }
+%  }
+%  child {node [circle,draw] {$c \frac{\infty}{0}$}
+%    child {node [rectangle,draw,label=below:loss] {$f \frac{\infty}{0}$}}
+%    child {node [rectangle,draw,label=below:?] {$g \frac{1}{1}$}}
+%  };
+%\end{tikzpicture}
+%\caption[Proof Number Search Tree]{Proof Number Search Tree, squares are OR nodes, circles are AND nodes, proof numbers are on top, disproof numbers on the bottom
+%\label{fig:pntree}
+%\end{figure}
+%\end{frame}
+
+
+\subsection*{Monte-Carlo Tree Search}
+
+\begin{frame}{Monte-Carlo Tree Search}
+\begin{itemize}
+	\item Alpha-Beta only works for games with a good heuristic evaluation function
+	\item Monte-Carlo evaluation can be used as a rough evaluation
+	\item Tree search improves the evaluation by finding good replies
+	\item Monte-Carlo Tree Search (MCTS) works well for several games
+	\item MCTS consists of 4 phases: Descent, Expansion, Rollout and Back-propagation, together called a simulation
+	\item MCTS runs simulations until time runs out or the position is solved
+	\item Many extensions and variations to basic MCTS
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Monte-Carlo Tree Search}
+\begin{figure}
+	\centering
+\includegraphics[width=0.9\textwidth]{mcts.pdf}
+\caption[Four Phases of Monte Carlo Tree Search]{Four Phases of Monte Carlo Tree Search, together called a Simulation, shown in the negamax formulation with a minimum of 3 experience before expansion}
+\label{fig:mcts}
+\end{figure}
+\end{frame}
+
+\begin{frame}{Monte-Carlo Tree Search}
+\begin{itemize}
+	\item Many possible node selection policies for the descent phase
+	\item Balance exploration and exploitation
+	\item Use information from rollouts
+	\item Heuristic knowledge
+	\item Rollout Policy
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{UCT}
+\begin{itemize}
+	\item Upper Confidence bounds as applied to Trees (UCT)
+	\item Based on Upper Confidence Bounds (UCB) used for the multi-armed bandit problem
+	\item $ n_i.v + c*\sqrt{\frac{\ln(n.n)}{n_i.n}} $
+	\item Balances exploration vs exploitation in a theoretically optimal way
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{RAVE}
+\begin{itemize}
+	\item Rapid Action Value Estimate
+	\item A win in a rollout is composed of several good moves
+	\item Moves that do well in rollouts are likely good if played earlier
+	\item Winning rate for each move in rollouts can be tracked and combined with real experience: $$ \beta*n_i.v + (1-\beta)*n_i.r $$
+	\item Phased out as real experience is gained, several possible formulas: $$ \beta = \frac{k}{k+n_i.n} \quad \beta = \frac{n_i.m}{n_i.n+n_i.m+4*n_i.n*n_i.m*b^2}$$
+	\item RAVE often leads to sufficient exploration that UCT exploration term is removed
+\end{itemize}
+\end{frame}
+
+\begin{frame}{Heuristic Knowledge}
+\begin{itemize}
+	\item UCT will find the right move eventually, but heuristics can help
+	\item Uses game specific information to encourage exploration of likely good moves
+	\item Can counteract unlucky randomness in rollouts
+	\item Can be added as fake experience or as a separate term
+	\item Fake experience initializes winning rate to non-zero values
+	\item Separate term adds an exploration bonus: $$\frac{n_i.k}{log(n_i.n)}, \quad \frac{n_i.k}{\sqrt{n_i.n}}, \quad \frac{n_i.k}{n_i.n}$$
+\end{itemize}
+\end{frame}
+
+
+\begin{frame}{Rollout Policy}
+\begin{itemize}
+	\item The strength of MCTS is dependent on the outcome of rollouts being representative of the strength of a position
+	\item More representative if moves are reasonable, even if not great
+	\item Can choose by weighted random with learnt patterns
+	\item Last Good Reply is game independent
+	\item Check for threats and winning moves
+\end{itemize}
+\end{frame}
+
+
+
 
 
 \end{document}

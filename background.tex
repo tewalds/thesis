@@ -217,7 +217,7 @@ One simple optimization is to stop the update phase once the proof and disproof 
     child {node [rectangle,draw,label=below:?] {$g \frac{1}{1}$}}
   };
 \end{tikzpicture}
-\caption[Proof Number Search Tree using the Negamax Formulation]{Proof Number Search Tree using the Negamax Formulation, all nodes are OR nodes, $\phi$ is on top, $\delta$ is below, based on \cite{winands2003-PDS-PN}}
+\caption[Proof Number Search Tree Using the Negamax Formulation]{Proof Number Search Tree Using the Negamax Formulation, all nodes are OR nodes, $\phi$ is on top, $\delta$ is below, based on \cite{winands2003-PDS-PN}}
 \label{fig:negamaxtree}
 \end{figure}
 
@@ -318,9 +318,9 @@ Proof number search uses an explicit tree which must be kept in memory, but the 
 
 \section{Monte Carlo Tree Search}
 
-For games where a fast and effective evaluation function exists, alpha-beta search is likely to result in deep search and strong game play. Unfortunately  a good heuristic is not known for many games including Go and Havannah. Monte Carlo Tree Search (MCTS) is an algorithm for building and exploring a game tree that is based on statistics instead of a heuristic evaluation function. MCTS avoids using a heuristic by building its tree as guided by playing games of random move sequences. While a sequence of random moves by itself has a very low playing strength, in aggregate random games tend to favour the player that is in a better position.
+For games where a fast and effective evaluation function exists, alpha-beta search is likely to result in deep search and strong game play. Unfortunately  a good heuristic is not known for many games including Go and Havannah. Monte Carlo Tree Search (MCTS) \cite{coulom2007efficient} is an algorithm for building and exploring a game tree that is based on statistics instead of a heuristic evaluation function. MCTS avoids using a heuristic by building its tree as guided by playing games of random move sequences. While a sequence of random moves by itself has a very low playing strength, in aggregate random games tend to favour the player that is in a better position.
 
-MCTS consists of four phases which together are called a simulation. The four phases, as shown in Figure \ref{fig:mcts}, are:
+MCTS consists of four phases \cite{chaslot2008progressive} which together are called a simulation. The four phases, as shown in Figure \ref{fig:mcts}, are:
 
 \begin{figure}
 	\centering
@@ -401,7 +401,7 @@ where $c$ is a tunable constant to balance the exploration rate. Intuitively, mo
 
 \subsection{RAVE: Rapid Action Value Estimate}\label{sec:rave}
 
-In basic MCTS many thousands of simulations are usually run per second, but the information about which moves were made during the rollouts is unused. A win or a loss is composed of many moves which contribute to that outcome, and often good moves during a rollout are also good moves if made earlier during the rollout or descent phases. This is a similar to the reasoning behind the history heuristic. Thus, we can keep a winning rate for each move during the rollouts and use this to encourage exploration of moves that do well during rollouts. This winning rate is called the Rapid Action Value Estimate (RAVE) \cite{gelly2007rave}. RAVE experience is gathered more quickly than by pure experience alone, though it is less correlated to success, and so should be phased out as real experience is gained. For a given node $n$,  $n.r$ is the RAVE winning rate and $n.m$ is the number of RAVE updates.
+In basic MCTS many thousands of simulations are usually run per second, but the information about which moves were made during the rollouts is unused. A win or a loss is composed of many moves which contribute to that outcome, and often good moves during a rollout are also good moves if made earlier during the rollout or descent phases. This is a similar to the reasoning behind the history heuristic. Thus, we can keep a winning rate for each move during the rollouts and use this to encourage exploration of moves that do well during rollouts. This winning rate is called the Rapid Action Value Estimate (RAVE) \cite{gelly2007rave, gelly2011monte}. RAVE experience is gathered more quickly than by pure experience alone, though it is less correlated to success, and so should be phased out as real experience is gained. For a given node $n$,  $n.r$ is the RAVE winning rate and $n.m$ is the number of RAVE updates.
 
 Usually RAVE experience and real experience are combined as a linear combination, starting as only RAVE experience and asymptotically approaching only real experience. This combination replaces $n_i.v$ in Equation \ref{eqn:uct}:
 \begin{equation}\label{eqn:rave1} \beta*n_i.v + (1-\beta)*n_i.r \end{equation}
@@ -410,7 +410,7 @@ Several formulas for $\beta$ have been proposed. The simplest two formulas for $
 \begin{equation}\label{eqn:rave3} \beta = \sqrt{\frac{k}{k+3*n_i.n}} \end{equation}
  both of which have a tunable constant $k$ which represents the midpoint, the number of simulations needed for the RAVE experience and real experience to have equal weight.
 
-David Silver computed an optimal formula for $\beta$ under the assumption of independence of estimates:
+David Silver computed an optimal formula for $\beta$ under the assumption of independence of estimates \cite{silver2009reinforcement}:
 \begin{equation}\label{eqn:rave4} \beta = \frac{n_i.m}{n_i.n+n_i.m+4*n_i.n*n_i.m*b^2} \end{equation}
 where $b$ is a tunable RAVE bias value.
 
