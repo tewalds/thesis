@@ -1,0 +1,159 @@
+% vim: set wrap
+
+
+
+Section \ref{sec:proofbackups} showed that MCTS is capable of solving non-trivial positions in reasonable time. This chapter will show several improvements to MCTS in Castro that make it better suited to solving harder positions, as well as presenting the solutions to board sizes 2, 3 and 4.
+
+
+\section{Monte Carlo Tree Search Solving}
+
+Using MCTS to solve positions, as described in Section \ref{sec:proofbackups}, would be enough to solve any position, given enough time and memory, but in a player the goal of the solver is mainly to avoid blunders, not necessarily to prove that the chosen move is optimal. When solving harder positions, more advanced techniques are needed to prove the outcome in reasonable time and memory. This section describes several techniques for reducing the search space, increasing the search speed and reducing memory requirements.
+
+
+\subsection{Symmetry}
+
+There are 37 cells on a size 4 board, but from the starting position only 6 of them are distinct. The rest are equivalent by symmetry, since the board has 6-fold rotational symmetry and 2-fold mirror symmetry. By storing a Zobrist hash \cite{zobrist1990new} for each of the 12 possible board orientations and taking the minimum value as the representative hash, symmetries can be found and ignored. As stones are placed, the number of possible symmetries decreases dramatically. Symmetric moves are ignored for the first five ply at node expansion. After five ply, the cost of calculating the extra hash values and finding the unique moves becomes too expensive and so symmetry detection is turned off for all later moves.
+
+Note that this does not find transpositions, only one-ply symmetries. Using a hash table of positions based on their Zobrist hash would turn the game tree into a directed acyclic graph (DAG), thereby dramatically reducing the search space, but could also lead to inaccuracies due to hash collisions.
+
+\subsection{Multi-threading}
+
+Solving a position usually takes significantly more effort than merely making a strong move. Therefore it is important to use as much computation power as possible. On today's multi-core machines, this means multi-threading.
+
+Writing fast and thread-safe code is a challenge. In Castro, the control thread spawns a pool of player threads, but does not participate in the search. The player threads each follow a simple state machine that includes the states: Wait\_Start, Wait\_End, Running, Garbage\_Collection and Cancelled. State updates are done using atomic compare-and-swap (CAS) machine instructions to ensure all state transitions are race-free, and to avoid the contention associated with locks. Barriers are used to pass control between the control thread and the player threads, as well as to decide which of the player threads will be used for garbage collection, as it is a single threaded procedure.
+
+All updates to values in the MCTS tree are also updated with atomic instructions. Updating experience or RAVE values are done using atomic increment instructions. Adding children is done with CAS to update the value of the children pointer. If multiple threads attempt to create the same set of children only one will succeed and the others will instead do a rollout from the parent node. If multiple threads backup the outcome of a single node in the tree, a race condition related to early draw detection (described in Section \ref{sec:drawdetect}) is possible, so if the value has changed unexpectedly, the backup is retried to ensure correctness.
+
+All the player-threads use the same algorithm and the same parameters, so without any special handling would make the same choices as they descend the tree. To encourage the threads to explore different parts of the tree, virtual losses\cite{chaslot2008parallel} are added as each thread descends the tree. A virtual loss is a loss that is added to the experience of a node during the descent phase, before the actual experience occurs. If the rollout results in a loss, this virtual loss is kept as real experience, but if the rollout results in a win, it is replaced with the true experience of a win. This makes the nodes that are currently being explored appear worse than they actually are, possibly worse than their siblings, thereby encouraging the other threads to explore the siblings instead. The virtual losses are added atomically as well.
+
+Contention between threads must be minimized to maximize speed. One early source of contention was generating random numbers for the rollouts. The rand() function in C++ is very fast in a single threaded environment, but has a lock that limits thread scalability. To avoid this lock, the MTRand library\footnote{\url{http://bedaux.net/mtrand/}} was modified to use only local state variables. One instance is used per thread. By having the structure local to each thread, no lock is needed and memory contention is minimized.
+
+Pondering --- thinking during the opponent's time --- is a simple way of improving the strength of a player, and is easy to implement given the thread pool described above, but it also makes debugging long running solving attempts easier. Simply move to the starting position, then enable pondering. The player threads will continue solving in the background, while the control thread continues to respond to commands, making it possible to query the state of the player to see the status of the solving attempt. While this is not necessary for a solver, it was instrumental in determining why some of the openings were taking so long to solve.
+
+
+\subsection{Garbage Collection}\label{sec:gc}
+
+When solving a non-trivial position, the size of the tree is likely to be exceed physical memory. For very hard problems it may be several orders of magnitude bigger. However, large portions of the tree are likely to be irrelevant at any given time so can be thrown away when the available memory is filled. If the deleted nodes are needed later, they can be recomputed. Various criteria for which part of the tree can be thrown away are possible, but the one used here is to discard the children of solved nodes, as well as the children of nodes that have fewer than N simulations, with a minimum N of 5. N is increased for the next round of garbage collection if less than half of the memory is freed, and decreased if more than half the memory is freed. This method worked well as long as N remains reasonably small, say below 100, but as N grows large, the amount of recomputation increases, increasing the solving time.
+
+
+\subsection{Memory Management}\label{sec:memory}
+
+Garbage collection, as described in Section \ref{sec:gc}, should be run any time the memory use exceeds the user specified memory limit, thereby freeing up enough memory to continue, but calculating memory use accurately is not trivial. Memory use is usually naively calculated as the number of nodes in the tree multiplied by the node size. Unfortunately this approach ignores the fact that malloc/free (or new/delete in C++) have some memory management overhead and tend to fragment memory over time. This fragmentation leaves pockets of permanently unusable memory, decreasing the usable available memory. With what amounts to a fixed node limit, extra memory is needed to compensate for the unusable memory, thereby exceeding the user specified memory limit.
+
+During a game, fragmentation is unlikely to make a difference as the run time is short enough that the fragmentation is a small fraction of total memory. In a long running solver, however, fragmentation could use up to half of the available memory, likely leading to a severe performance hit as the system swaps memory to disk. An overhead as high as 30\% was observed in practice. To avoid this, a compacting tree was implemented. It periodically rearranges the nodes in the tree to avoid fragmentation, while allowing the full memory to be used. Conceptually this is similar to the compacting garbage collectors in higher level languages like Java. Compacting the tree into a contiguous segment of the heap leaves a contiguous empty section of the heap, allowing a very fast allocation strategy to be used. It simply returns the pointer to the beginning of the empty segment, and moves the empty pointer forward by the amount that was allocated. This is more memory efficient than a normal malloc call, which uses fixed and inaccurate bucket sizes. It is also faster, as it is simply an atomic increment. Using this allocation strategy means every byte is accounted for, allowing strong upper bounds on memory limits. Several of the harder positions would not be solvable without this compacting tree, at least not without breaking the positions into smaller subtrees and solving them independently.
+
+\subsection{Early Draw Detection}\label{sec:drawdetect}
+
+Checking the game outcome at node expansion, and backing up wins, losses and draws as described in Section \ref{sec:proofbackups} is enough to solve any position, given sufficient time. Certain positions in Havannah lead to many draws, and can take prohibitively long to solve without more advanced draw detection. Figure \ref{fig:drawnowin} shows a board where no wins are possible after move 31 even if both players cooperate. Without draw detection this position will take $6!=720$ simulations to enumerate and prove. In a game this is not important, since its win ratio approaches the correct value of a draw quickly, but this is not rigorous enough for a solver.
+
+To show that a position is a draw, the three win conditions need to be checked to see if any wins of that type are possible. Fork and bridge wins can be detected with the heuristic described in Section \ref{sec:distwin}: start a flood fill from each corner and edge for each player. If none of the empty cells can reach three edges or two corners for a player, then that player cannot form a fork or a bridge. One player being unable to form a fork or a bridge does not preclude the other player from doing so.
+
+Potential rings can be detected by checking for encirclability. A group of stones that connects to an edge or corner cannot be encircled by the opponent. Any cell that is next to a group that connects to an edge or corner also cannot be encircled by the other player. If no cells can be encircled, then no rings are possible.
+
+If no forks, bridges or rings are possible for a player, then that player cannot win, and so should force a draw if possible. If both players' best outcome is a draw, then that position is a proven draw.
+
+More advanced techniques of draw detection based on virtual connections could detect draws much earlier, possibly as early as move 20 in Figure \ref{fig:drawproven}, but these techniques have not been explored. The speedup from the techniques described here may not be as large as $6!$ for all positions, but it is still at least an order of magnitude for most early draws.
+
+
+\section{Solution to Havannah Sizes 2, 3 and 4}
+
+The perfect play solutions to board sizes 2, 3 and 4 are shown in this section and in Figure \ref{fig:solutionboard} in particular. The colour of the piece represents the player that will win the game if white makes the first move on that cell. The subsections describe the proofs in more detail.
+
+\begin{figure}[tb]
+\centering
+	\subfloat[]{\label{fig:soln2}
+		\begin{HavannahBoard}[board size=2,coordinate style=classical,show coordinates=false]
+		\HStoneGroup[color=white]{a1,a2,b1,b3,c2,c3}
+		\HStoneGroup[color=black]{b2}
+		\end{HavannahBoard}
+	}
+	\subfloat[]{\label{fig:soln3}
+		\begin{HavannahBoard}[board size=3,coordinate style=classical,show coordinates=false]
+		\HStoneGroup[color=white]{a1,a3,c1,c5,e3,e5}
+		\HStoneGroup[color=black]{a2,b1,b2,b3,b4,c2,c3,c4,d2,d3,d4,d5,e4}
+		\end{HavannahBoard}
+	}
+	\subfloat[]{\label{fig:soln4}
+		\begin{HavannahBoard}[board size=4,coordinate style=classical,show coordinates=false]
+		\HStoneGroup[color=white]{a1,a2,a3,a4,b1,b2,b3,b4,b5,c1,c2,c3,c4,c5,c6,d1,d2,d3,d4,d5,d6,d7,e2,e3,e4,e5,e6,e7,f3,f4,f5,f6,f7,g4,g5,g6,g7}
+		\end{HavannahBoard}
+	}
+\caption[Solution to Board Sizes 2, 3 and 4]{(a) Solution to size 2 (b) Solution to size 3 (c) Solution to size 4. The colour of a piece represents the winner if white makes the first move in that position. No openings lead to a draw.}
+\label{fig:solutionboard}
+\end{figure}
+
+
+\subsection{Size 2 Proof}
+
+Size 2 Havannah is a trivial game, with the solution shown in Figure \ref{fig:soln2}. It has 6 corners, no edges and a center. The corner opening is a win, since no reply blocks both neighbouring corners. The center opening is a loss, since it loses to any corner reply.
+
+\subsection{Size 3 Proof}
+
+\begin{figure}
+\centering
+\input{proof-size3}
+\caption[Proof Tree for Size 3]{Proof Tree for Size 3 showing nodes that took more than 100 simulations to solve}
+\label{fig:proof3}
+\end{figure}
+
+Size 3 Havannah is more interesting than size 2, but is still simple enough that the solution, as shown in Figure \ref{fig:soln3}, could be derived by hand. It has been verified by 3 different solvers and was used as a benchmark when developing the solvers in Castro. Alpha-beta, proof number search and Monte-Carlo tree search all solve size 3 in under 100ms on commodity hardware. A proof tree as found by the MCTS player is shown in Figure \ref{fig:proof3}. This is not a minimal proof tree. A minimal proof tree has a maximum depth of 10 moves.
+
+
+\subsection{Size 4 Proof}\label{sec:size4proof}
+
+As shown in Table \ref{table:complexity}, size 4  has a state space that is 8 orders of magnitude bigger than size 3. The size 4 solution was computed by MCTS twice, first to show it was possible and to refine the method, then to confirm the proof and to save the proof tree. The two solutions produced different proof trees, but came to the same result, shown in Figure \ref{fig:soln4}. The proofs were calculated on a 10 machine cluster where each machine is an 8-core Xeon E5463 2.8 GHz with 32Gb of ram.
+
+During the first solving attempt, each opening move was made, then the player was left to ponder until the solution was found. The a1, b2 and b3 openings completed in a single run but took up to a week each. The a2, c3 and d4 openings had such big proof trees that their replies needed to be solved independently. The c3 and d4 openings often had upwards of 90\% of the simulations ending in draws, which prompted the work on early draw detection. The proof trees for d4 were huge and led to so much memory fragmentation that the more advanced memory management was required. This solving attempt took several months to come to a reliable outcome, due to new features, bug fixing, parameter tuning and general trial and error. Basic logs of solved moves were kept, but were of little use to rebuild the proof tree.
+
+A second solving attempt was done to produce a proof tree. The correct responses to the opening replies, as calculated in the first attempt, were used to speed up the computation, and the opening replies were computed independently for a2, b2, c3 and d4. This sped up computing the proofs for several reasons: several of the moves that looked strong had already been proven to be losses and could be ignored; the subtrees were smaller and so caused less recomputation of garbage-collected nodes; and the openings could be distributed over more machines. The proof trees for each opening were saved to sgf\footnote{Smart Game Format: \url{http://www.red-bean.com/sgf/}} files, which were later combined for the final proof. The complete proof required approximately $4 \times 10^{11}$ simulations and took about a week across the 10 machines using all 80 cores. A queueing system was used to keep all machines consistently busy.
+
+The proof trees for the 6 opening moves are shown in Figures \ref{fig:proof-a1}, \ref{fig:proof-a2}, \ref{fig:proof-b2}, \ref{fig:proof-b3}, \ref{fig:proof-c3} and \ref{fig:proof-d4}. The moves shown all took more than a minimum amount of simulations to solve, with the minimum value chosen to approximately fill the page, ranging from $10^{8}$ simulations for a1 to $10^{9}$ simulations for a2. Only the proof trees are shown, so a move that took more than the minimum amount to solve but was proven as a loss when a sibling was proven as a win is not shown. More detailed proof trees were recorded and are posted on the thesis website \url{http://havannah.ewalds.ca/}. All nodes that took at least 10,000 simulations to solve are recorded in the posted proof trees.
+
+A complete, independent confirmation of the proof has not been attempted, but the code is open source and more detailed proof trees are available for inspection. Several non-trivial problems have been independently solved by all the solvers included in Castro, all with the same result. The a1 opening has been confirmed by PNS with a 30gb transposition table, but this took upwards of 80 hours, about 10 times longer than MCTS on the same state. As the a1 opening is the easiest opening to prove, confirming the proofs on the other openings, without using the existing proof trees as a guide, would be prohibitively slow. The multi-threaded version of PNS, including the memory management, garbage collection and virtual loss improvements but without the transposition table also attempted the a1 opening on the same hardware, but failed to finish within several days.
+
+PNS is faster than MCTS on many small problems, but is much slower at solving problems as large as the complete size 4. This is conjectured to be because PNS has little guidance other than the local threats and branching factor, while MCTS can deduce good moves from the result of its rollouts. When the tree has as little differentiating factors, as is true of the first several ply of size 4, the behaviour of PNS is quite similar to that of a breadth-first search. In essence, it gets lost. MCTS on the other hand starts differentiating good moves from bad moves quite early on, even when the structure of the tree is uniform. This makes MCTS a good candidate for solving hard states, while PNS is good for solving easier or less uniform states very quickly.
+
+It is worth noting that size 4 took approximately $3 \times 10^7$ cpu seconds to solve, which is about $6 \times 10^8$ times more time than it takes to solve size 3. Referencing Table \ref{table:complexity}, the size 4 state space is about $3 \times 10^8$ times bigger, which is very similar to the difference in time to solve the two. This suggests that solving size 5 may well take about $10^{12}$ times more effort to solve than size 4, unless some clever mathematical properties can be exploited to shrink the state space. %One week and 25 billion simulations are barely even a start at attempting to solve the a1 opening on size 5, as the winning rate remained at over 43\%.
+
+\begin{figure}
+\centering
+\input{proof-a1-100M}
+\caption[Proof Tree for the a1 Opening on Size 4]{Proof Tree for the a1 opening on size 4 showing nodes that took more than $10^8$ simulations to solve}
+\label{fig:proof-a1}
+\end{figure}
+
+\begin{figure}
+\centering
+\input{proof-a2-1B}
+\caption[Proof Tree for the a2 Opening on Size 4]{Proof Tree for the a2 opening on size 4 showing nodes that took more than $10^9$ simulations to solve}
+\label{fig:proof-a2}
+\end{figure}
+
+\begin{figure}
+\centering
+\input{proof-b2-250M}
+\caption[Proof Tree for the b2 Opening on Size 4]{Proof Tree for the b2 opening on size 4 showing nodes that took more than $2.5 \times 10^8$ simulations to solve}
+\label{fig:proof-b2}
+\end{figure}
+
+\begin{figure}
+\centering
+\input{proof-b3-100M}
+\caption[Proof Tree for the b3 Opening on Size 4]{Proof Tree for the b3 opening on size 4 showing nodes that took more than $10^8$ simulations to solve}
+\label{fig:proof-b3}
+\end{figure}
+
+\begin{figure}
+\centering
+\input{proof-c3-600M}
+\caption[Proof Tree for the c3 Opening on Size 4]{Proof Tree for the c3 opening on size 4 showing nodes that took more than $6 \times 10^8$ simulations to solve}
+\label{fig:proof-c3}
+\end{figure}
+
+\begin{figure}
+\centering
+\input{proof-d4-400M}
+\caption[Proof Tree for the d4 Opening on Size 4]{Proof Tree for the d4 opening on size 4 showing nodes that took more than $4 \times 10^8$ simulations to solve}
+\label{fig:proof-d4}
+\end{figure}
+

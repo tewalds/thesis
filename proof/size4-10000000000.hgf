@@ -1,0 +1,137 @@
+(;FF[4]SZ[4]
+
+ (;W[a1]C[mcts, sims:11039775774, avg:0.7656, outcome:1, best:g7])
+ (;W[a2]C[mcts, sims:143736173833, avg:0.7509, outcome:1, best:g7]
+  (;B[a1]C[mcts, sims:4325626494, avg:0.2205, outcome:1, best:b2]
+   (;W[b2]C[mcts, sims:4325221240, avg:0.7782, outcome:1, best:b5])
+  )
+  (;B[a4]C[mcts, sims:17466370059, avg:0.2537, outcome:1, best:c5]
+   (;W[c5]C[mcts, sims:17267076515, avg:0.7395, outcome:1, best:g4])
+  )
+  (;B[b1]C[mcts, sims:5052508720, avg:0.2303, outcome:1, best:d7]
+   (;W[d7]C[mcts, sims:5051499253, avg:0.7688, outcome:1, best:a1])
+  )
+  (;B[d2]C[mcts, sims:17274859185, avg:0.2402, outcome:1, best:g4]
+   (;W[g4]C[mcts, sims:17269842332, avg:0.7589, outcome:1, best:a4]
+    (;B[a4]C[mcts, sims:5639720259, avg:0.2363, outcome:1, best:c3]
+     (;W[c3]C[mcts, sims:5570401607, avg:0.7654, outcome:1, best:a1])
+    )
+   )
+  )
+  (;B[d7]C[mcts, sims:21530950485, avg:0.2313, outcome:1, best:b4]
+   (;W[b4]C[mcts, sims:21474980844, avg:0.7675, outcome:1, best:b1]
+    (;B[a1]C[mcts, sims:7275308281, avg:0.2238, outcome:1, best:g4]
+     (;W[g4]C[mcts, sims:7174840340, avg:0.7787, outcome:1, best:g7])
+    )
+    (;B[b1]C[mcts, sims:7887120390, avg:0.2156, outcome:1, best:g4]
+     (;W[g4]C[mcts, sims:7886747106, avg:0.7831, outcome:1, best:d1])
+    )
+   )
+  )
+  (;B[e2]C[mcts, sims:19789670872, avg:0.2362, outcome:1, best:c2]
+   (;W[c2]C[mcts, sims:19786561022, avg:0.7606, outcome:1, best:a1]
+    (;B[a1]C[mcts, sims:9749462905, avg:0.2431, outcome:1, best:b4]
+     (;W[b4]C[mcts, sims:9740141322, avg:0.7519, outcome:1, best:g4])
+    )
+   )
+  )
+  (;B[e6]C[mcts, sims:5851510518, avg:0.2847, outcome:1, best:g7]
+   (;W[g7]C[mcts, sims:5851277209, avg:0.7093, outcome:1, best:a4])
+  )
+  (;B[g7]C[mcts, sims:16494290019, avg:0.2135, outcome:1, best:d1]
+   (;W[d1]C[mcts, sims:15451797875, avg:0.8026, outcome:1, best:g4]
+    (;B[g4]C[mcts, sims:9022829427, avg:0.1836, outcome:1, best:f5]
+     (;W[f5]C[mcts, sims:9022421199, avg:0.8153, outcome:1, best:a4])
+    )
+   )
+  )
+ )
+ (;W[b2]C[mcts, sims:31905163541, avg:0.7719, outcome:1, best:g7]
+  (;B[a4]C[mcts, sims:14006385451, avg:0.2176, outcome:1, best:c5]
+   (;W[c5]C[mcts, sims:14005367533, avg:0.7804, outcome:1, best:d7])
+  )
+  (;B[g7]C[mcts, sims:4605927102, avg:0.2002, outcome:1, best:a4]
+   (;W[a4]C[mcts, sims:4605671623, avg:0.7979, outcome:1, best:a3])
+  )
+ )
+ (;W[b3]C[mcts, sims:17684154871, avg:0.808, outcome:1, best:a1]
+  (;B[a1]C[mcts, sims:7372238474, avg:0.1765, outcome:1, best:c2]
+   (;W[c2]C[mcts, sims:7371519681, avg:0.8219, outcome:1, best:g7])
+  )
+  (;B[d1]C[mcts, sims:5500033205, avg:0.1976, outcome:1, best:a1]
+   (;W[a1]C[mcts, sims:5468813428, avg:0.8027, outcome:1, best:g7]
+    (;B[a4]C[mcts, sims:5419318070, avg:0.1955, outcome:1, best:g7]
+     (;W[g7]C[mcts, sims:5291469802, avg:0.8097, outcome:1, best:g6])
+    )
+   )
+  )
+ )
+ (;W[c3]C[mcts, sims:111119196197, avg:0.7601, outcome:1, best:g7]
+  (;B[a1]C[mcts, sims:49649632397, avg:0.2386, outcome:1, best:g7]
+   (;W[g7]C[mcts, sims:48516945753, avg:0.7653, outcome:1, best:a4]
+    (;B[a4]C[mcts, sims:11184415193, avg:0.2337, outcome:1, best:a2]
+     (;W[a2]C[mcts, sims:11184080309, avg:0.7631, outcome:1, best:g4])
+    )
+    (;B[b4]C[mcts, sims:8083748893, avg:0.2542, outcome:1, best:a2]
+     (;W[a2]C[mcts, sims:8082703564, avg:0.7437, outcome:1, best:g6])
+    )
+    (;B[c6]C[mcts, sims:4738567656, avg:0.2154, outcome:1, best:b4]
+     (;W[b4]C[mcts, sims:4737034696, avg:0.7839, outcome:1, best:g6])
+    )
+    (;B[d7]C[mcts, sims:8769386947, avg:0.2368, outcome:1, best:a4]
+     (;W[a4]C[mcts, sims:8768337174, avg:0.7626, outcome:1, best:g6])
+    )
+   )
+  )
+  (;B[a2]C[mcts, sims:17834358203, avg:0.2026, outcome:1, best:c5]
+   (;W[c5]C[mcts, sims:17829679965, avg:0.7931, outcome:1, best:d7]
+    (;B[d7]C[mcts, sims:9482404495, avg:0.2105, outcome:1, best:a4]
+     (;W[a4]C[mcts, sims:6929052641, avg:0.8626, outcome:1, best:g4])
+    )
+   )
+  )
+  (;B[a4]C[mcts, sims:17612159382, avg:0.2762, outcome:1, best:a1]
+   (;W[a1]C[mcts, sims:15447009357, avg:0.7449, outcome:1, best:d1]
+    (;B[d1]C[mcts, sims:6628987198, avg:0.2936, outcome:1, best:d7]
+     (;W[d7]C[mcts, sims:4732793552, avg:0.7611, outcome:1, best:g4])
+    )
+    (;B[d7]C[mcts, sims:5560130476, avg:0.1915, outcome:1, best:c5]
+     (;W[c5]C[mcts, sims:5560019028, avg:0.8078, outcome:1, best:g7])
+    )
+   )
+  )
+  (;B[d7]C[mcts, sims:8009179797, avg:0.2249, outcome:1, best:a4]
+   (;W[a4]C[mcts, sims:8008731753, avg:0.7743, outcome:1, best:a1])
+  )
+  (;B[e6]C[mcts, sims:6380139089, avg:0.2503, outcome:1, best:g7]
+   (;W[g7]C[mcts, sims:6379614716, avg:0.7493, outcome:1, best:a4])
+  )
+ )
+ (;W[d4]C[mcts, sims:71826496307, avg:0.7626, outcome:1, best:c3]
+  (;B[a1]C[mcts, sims:52601036813, avg:0.2378, outcome:1, best:g7]
+   (;W[g7]C[mcts, sims:52601036813, avg:0.7622, outcome:1, best:f7]
+    (;B[a2]C[mcts, sims:6231176374, avg:0.1901, outcome:1, best:b4]
+     (;W[b4]C[mcts, sims:6229195647, avg:0.8095, outcome:1, best:d1])
+    )
+    (;B[a4]C[mcts, sims:18512005417, avg:0.199, outcome:1, best:b3]
+     (;W[b3]C[mcts, sims:18511862826, avg:0.8003, outcome:1, best:b2])
+    )
+    (;B[b4]C[mcts, sims:8262758909, avg:0.3311, outcome:1, best:d6]
+     (;W[d6]C[mcts, sims:8262758909, avg:0.6689, outcome:1, best:g6]
+      (;B[d1]C[mcts, sims:5802610931, avg:0.349, outcome:1, best:b1]
+       (;W[b1]C[mcts, sims:5802306911, avg:0.6108, outcome:1, best:d7])
+      )
+     )
+    )
+    (;B[d7]C[mcts, sims:8952391919, avg:0.2754, outcome:1, best:a4]
+     (;W[a4]C[mcts, sims:8936738183, avg:0.7188, outcome:1, best:d1])
+    )
+   )
+  )
+  (;B[a2]C[mcts, sims:10240957085, avg:0.2262, outcome:1, best:d1]
+   (;W[d1]C[mcts, sims:10240957085, avg:0.7738, outcome:1, best:g7])
+  )
+  (;B[b3]C[mcts, sims:4477312370, avg:0.249, outcome:1, best:b2]
+   (;W[b2]C[mcts, sims:4476322453, avg:0.7507, outcome:1, best:c5])
+  )
+ ))

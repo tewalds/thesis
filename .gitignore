@@ -7,7 +7,6 @@
 *.lot
 *.out
 *.toc
-*.pdf
 *.properties.xml
 *.make
 *.d
